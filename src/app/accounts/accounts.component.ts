@@ -15,15 +15,14 @@ export class AccountsComponent implements OnInit {
       .subscribe((categories) => {
         this.categories = categories;
         console.log(categories);
+        if (categories.length) {
+          this.onCategory(this.categories[0]);
+        }
       });
   }
 
   onGranularity(granularity: string) {
     this.saldoService.granularity.next(granularity);
-  }
-
-  getCategories() {
-    return ['Inkomsten', 'Uitgaven'];
   }
 
   onCategory(category) {

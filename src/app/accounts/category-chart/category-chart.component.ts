@@ -4,6 +4,7 @@ import * as am4charts from '@amcharts/amcharts4/charts';
 import am4themes_animated from '@amcharts/amcharts4/themes/animated';
 import { SaldoService, Balance } from '../saldo.service';
 import am4lang_nl_NL from '@amcharts/amcharts4/lang/nl_NL';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-category-chart',
@@ -12,12 +13,17 @@ import am4lang_nl_NL from '@amcharts/amcharts4/lang/nl_NL';
 })
 export class CategoryChartComponent implements OnInit, AfterViewInit, OnDestroy {
   mode = 'monthly';
-  category = 'Inkomsten';
+  category: string;
+  subscription: Subscription;
   private chart: am4charts.XYChart;
 
   constructor(private zone: NgZone,
               private saldoService: SaldoService) { }
+
   ngOnInit() {
+    this.subscription = this.saldoService.category.subscribe((category) => {
+      this.category = category;
+    });
   }
 
   ngAfterViewInit(): void {
@@ -42,6 +48,7 @@ export class CategoryChartComponent implements OnInit, AfterViewInit, OnDestroy 
       dateAxis.renderer.minGridDistance = 10;
 
       const valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+      valueAxis.renderer.minWidth = 100;
 
       // Create series
       const amount = chart.series.push(new am4charts.ColumnSeries());
@@ -52,8 +59,9 @@ export class CategoryChartComponent implements OnInit, AfterViewInit, OnDestroy 
       amount.columns.template.fillOpacity = 0.8;
       amount.clustered = false;
 
+
       const columnTemplate = amount.columns.template;
-      columnTemplate.strokeWidth = 2;
+      // columnTemplate.strokeWidth = 2;
       columnTemplate.strokeOpacity = 1;
       this.chart = chart;
 
@@ -70,7 +78,8 @@ export class CategoryChartComponent implements OnInit, AfterViewInit, OnDestroy 
           this.populateChart();
         });
       });
-      this.saldoService.category.subscribe((category) => {
+      this.subscription.unsubscribe();
+      this.subscription = this.saldoService.category.subscribe((category) => {
         this.category = category;
         this.zone.runOutsideAngular(() => {
           this.populateChart();
@@ -99,5 +108,6 @@ export class CategoryChartComponent implements OnInit, AfterViewInit, OnDestroy 
         this.chart = null;
       }
     });
+    this.subscription.unsubscribe();
   }
 }

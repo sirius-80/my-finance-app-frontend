@@ -9,6 +9,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { HomeComponent } from './home/home.component';
 import { AccountsComponent } from './accounts/accounts.component';
 import { CategoryChartComponent } from './accounts/category-chart/category-chart.component';
+import { HistoryChartsComponent } from './accounts/history-charts/history-charts.component';
 
 @NgModule({
   declarations: [
@@ -18,6 +19,7 @@ import { CategoryChartComponent } from './accounts/category-chart/category-chart
     HomeComponent,
     IncomeExpensesChartComponent,
     CategoryChartComponent,
+    HistoryChartsComponent,
   ],
   imports: [
     BrowserModule,

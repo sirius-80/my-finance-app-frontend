@@ -42,7 +42,7 @@ export class BalanceChartComponent implements OnInit, AfterViewInit, OnDestroy {
 
       const valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
       valueAxis.tooltip.disabled = true;
-      valueAxis.renderer.minWidth = 35;
+      valueAxis.renderer.minWidth = 100;
 
       const series = chart.series.push(new am4charts.LineSeries());
       series.dataFields.dateX = 'date';

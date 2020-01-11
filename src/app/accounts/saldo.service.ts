@@ -16,6 +16,15 @@ export interface IncomeExpensesProfitLoss {
   loss: number;
 }
 
+export interface Combined {
+  date: Date;
+  balance: number;
+  income: number;
+  expenses: number;
+  profit: number;
+  loss: number;
+}
+
 export interface Category {
   id: string;
   name: string;
@@ -39,6 +48,12 @@ export class SaldoService {
     const url = 'http://localhost:5002/income-expenses';
     const params = new HttpParams().set('mode', mode);
     return this.httpClient.get<IncomeExpensesProfitLoss[]>(url, {params} );
+  }
+
+  fetchCombinedData(mode: string) {
+    const url = 'http://localhost:5002/combined';
+    const params = new HttpParams().set('mode', mode);
+    return this.httpClient.get<Combined[]>(url, {params} );
   }
 
   fetchCategoryData(mode: string, category: string) {
