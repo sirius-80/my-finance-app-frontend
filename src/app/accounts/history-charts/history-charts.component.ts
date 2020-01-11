@@ -166,22 +166,12 @@ export class HistoryChartsComponent implements OnInit, OnDestroy, AfterViewInit 
 
   private updateCategory() {
     return this.saldoService.fetchCombinedData(this.mode, this.category).subscribe((combined: Combined[]) => {
-      combined.forEach((items, index) => {
-        this.chart.data[index].category_amount = items.category_amount;
-      });
-      this.chart.validateData();
-      // for (const items of combined) {
-      //   data.push({
-      //     date: items.date,
-      //     name: items.date,
-      //     balance: items.balance,
-      //     income: items.income,
-      //     expenses: items.expenses,
-      //     profit: items.profit,
-      //     loss: items.loss,
-      //     category_amount: items.category_amount });
-      // }
-      // this.chart.data = data;
+      if (this.chart.data) {
+        combined.forEach((items, index) => {
+          this.chart.data[index].category_amount = items.category_amount;
+        });
+        this.chart.validateData();
+      }
     });
   }
 
