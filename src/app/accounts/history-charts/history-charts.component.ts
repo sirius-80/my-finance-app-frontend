@@ -38,7 +38,7 @@ export class HistoryChartsComponent implements OnInit, OnDestroy, AfterViewInit 
       dateAxis.renderer.grid.template.location = 0;
       dateAxis.events.on('datarangechanged', (event) => {
         this.saldoService.dateRange.next({min: event.target.minZoomed, max: event.target.maxZoomed});
-        console.log('Data-range changed: ', event);
+        // console.log('Data-range changed: ', event);
       });
 
       const balanceSeries = this.createBalanceSubchart(chart);
@@ -87,7 +87,7 @@ export class HistoryChartsComponent implements OnInit, OnDestroy, AfterViewInit 
     income.dataFields.valueY = 'income';
     income.dataFields.dateX = 'date';
     income.name = 'Income';
-    income.columns.template.fill = am4core.color('blue').lighten(.9);
+    income.columns.template.properties.fill = chart.colors.getIndex(0).lighten(0.5);
     income.columns.template.tooltipText = tooltipText;
     income.columns.template.fillOpacity = 0.8;
     income.clustered = false;
@@ -99,11 +99,9 @@ export class HistoryChartsComponent implements OnInit, OnDestroy, AfterViewInit 
     expenses.name = 'Expenses';
     // expenses.columns.template.tooltipText = tooltipText;
     expenses.columns.template.fillOpacity = 0.8;
-    expenses.columns.template.fill = am4core.color('blue').lighten(.9);
+    expenses.columns.template.properties.fill = chart.colors.getIndex(0).lighten(0.5);
     expenses.clustered = false;
     expenses.yAxis = valueAxisIncomeExpenses;
-    // expenses.columns.template.fill = income.columns.template.fill;
-    // expenses.columns.template.fillModifier = income.columns.template.fillModifier;
 
     const profit = chart.series.push(new am4charts.ColumnSeries());
     profit.dataFields.valueY = 'profit';

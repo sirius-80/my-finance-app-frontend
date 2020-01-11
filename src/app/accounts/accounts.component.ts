@@ -14,9 +14,9 @@ export class AccountsComponent implements OnInit {
     this.saldoService.fetchCategories()
       .subscribe((categories) => {
         this.categories = categories;
-        console.log(categories);
+        // console.log(categories);
         if (categories.length) {
-          this.onCategory(this.categories[0]);
+          this.onCategory(this.categories[0].id);
         }
       });
   }
@@ -26,7 +26,7 @@ export class AccountsComponent implements OnInit {
   }
 
   onCategory(category) {
-    console.log(category);
+    // console.log(category);
 
     this.saldoService.setCategory(category);
   }

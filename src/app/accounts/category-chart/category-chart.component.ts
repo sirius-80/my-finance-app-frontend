@@ -59,6 +59,9 @@ export class CategoryChartComponent implements OnInit, AfterViewInit, OnDestroy 
       amount.columns.template.fillOpacity = 0.8;
       amount.clustered = false;
 
+      // Create active state
+      let activeState = amount.columns.template.states.create('active');
+      activeState.properties.fill = chart.colors.getIndex(4);
 
       const columnTemplate = amount.columns.template;
       // columnTemplate.strokeWidth = 2;
@@ -85,6 +88,16 @@ export class CategoryChartComponent implements OnInit, AfterViewInit, OnDestroy 
           this.populateChart();
         });
       });
+      amount.columns.template.events.on('hit', (event) => {
+        event.target.isActive = !event.target.isActive;
+        if (event.target.isActive) {
+          for (const column of amount.columns) {
+            if (column !== event.target) {
+              column.isActive = false;
+            }
+          }
+        }
+      });
     });
   }
 
@@ -94,7 +107,7 @@ export class CategoryChartComponent implements OnInit, AfterViewInit, OnDestroy 
       for (const balance of balances) {
         data.push({ date: balance.date, name: this.category, amount: balance.amount });
       }
-      console.log('Populate category chart ', this.category, data);
+      // console.log('Populate category chart ', this.category, data);
 
       this.chart.data = data;
       this.chart.validate();

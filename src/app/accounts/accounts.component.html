@@ -1,6 +1,5 @@
 <div class="row">
   <div class="col-sm">
-    <br>
     <button type="button" class="btn btn-primary" (click)="saldoService.setGranularity('monthly')">Monthly</button>
     <button type="button" class="btn btn-primary" (click)="saldoService.setGranularity('yearly')">Yearly</button>
     <hr>
@@ -9,14 +8,12 @@
 <div class="row">
   <div class="col-sm-6">
     <app-history-charts></app-history-charts>
-    <!-- <app-balance-chart></app-balance-chart>
-    <app-income-expenses-chart></app-income-expenses-chart>
-    <app-category-chart></app-category-chart> -->
   </div>
   <div class="col-sm-6">
     <select class="btn" (change)="onCategory($event.target.value)">
       <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
     </select>
     <app-category-chart></app-category-chart>
+    <app-category-pie-chart></app-category-pie-chart>
   </div>
 </div>
