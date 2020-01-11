@@ -14,6 +14,8 @@ import { Subscription } from 'rxjs';
 })
 export class HistoryChartsComponent implements OnInit, OnDestroy, AfterViewInit {
   subscription: Subscription;
+  subscriptionCategory: Subscription;
+  category: string;
   mode = 'monthly';
   private chart: am4charts.XYChart;
   constructor(private zone: NgZone,
@@ -41,8 +43,9 @@ export class HistoryChartsComponent implements OnInit, OnDestroy, AfterViewInit 
 
       const balanceSeries = this.createBalanceSubchart(chart);
       this.createIncomeExpensesSubchart(chart);
+      this.createCategorySubchart(chart);
 
-      // chart.cursor = new am4charts.XYCursor();
+      chart.cursor = new am4charts.XYCursor();
       const scrollbarX = new am4charts.XYChartScrollbar();
       scrollbarX.series.push(balanceSeries);
       // scrollbarX.updateWhileMoving = false;
@@ -61,11 +64,22 @@ export class HistoryChartsComponent implements OnInit, OnDestroy, AfterViewInit 
           this.populateChart();
         });
       });
+      this.subscriptionCategory = this.saldoService.category.subscribe((category) => {
+        this.category = category;
+        this.zone.runOutsideAngular(() => {
+          this.updateCategory();
+        });
+      });
     });
   }
 
   private createBalanceSubchart(chart: am4charts.XYChart) {
     const valueAxisBalance = chart.yAxes.push(new am4charts.ValueAxis());
+
+    const interfaceColors = new am4core.InterfaceColorSet();
+    valueAxisBalance.renderer.gridContainer.background.fill = interfaceColors.getFor('alternativeBackground');
+    valueAxisBalance.renderer.gridContainer.background.fillOpacity = 0.05;
+
     valueAxisBalance.tooltip.disabled = true;
 
     const balanceSeries = chart.series.push(new am4charts.LineSeries());
@@ -77,9 +91,34 @@ export class HistoryChartsComponent implements OnInit, OnDestroy, AfterViewInit 
     return balanceSeries;
   }
 
+  private createCategorySubchart(chart: am4charts.XYChart) {
+    const valueAxisCategory = chart.yAxes.push(new am4charts.ValueAxis());
+
+    const interfaceColors = new am4core.InterfaceColorSet();
+    valueAxisCategory.renderer.gridContainer.background.fill = interfaceColors.getFor('alternativeBackground');
+    valueAxisCategory.renderer.gridContainer.background.fillOpacity = 0.05;
+
+    valueAxisCategory.marginTop = 50;
+
+    // Create series
+    const amount = chart.series.push(new am4charts.ColumnSeries());
+    amount.dataFields.valueY = 'category_amount';
+    amount.dataFields.dateX = 'date';
+    amount.name = 'Amount';
+    amount.columns.template.tooltipText = '{dateX}: Amount: {category_amount.formatNumber("€ #,###.")}';
+    amount.columns.template.fillOpacity = 0.8;
+    amount.clustered = false;
+    amount.yAxis = valueAxisCategory;
+  }
+
   private createIncomeExpensesSubchart(chart: am4charts.XYChart) {
     const valueAxisIncomeExpenses = chart.yAxes.push(new am4charts.ValueAxis());
     valueAxisIncomeExpenses.marginTop = 50;
+
+    const interfaceColors = new am4core.InterfaceColorSet();
+    valueAxisIncomeExpenses.renderer.gridContainer.background.fill = interfaceColors.getFor('alternativeBackground');
+    valueAxisIncomeExpenses.renderer.gridContainer.background.fillOpacity = 0.05;
+
     // tslint:disable-next-line: max-line-length
     const tooltipText = '{dateX}: \nIncome: {income.formatNumber("€ #,###.")}\nExpenses: {expenses.formatNumber("€ #,###.")}\nProfit: [bold]{profit.formatNumber("€ #,###.")}[/]\nLoss: [bold]{loss.formatNumber("€ #,###.")}[/]';
 
@@ -125,8 +164,29 @@ export class HistoryChartsComponent implements OnInit, OnDestroy, AfterViewInit 
     loss.yAxis = valueAxisIncomeExpenses;
   }
 
+  private updateCategory() {
+    return this.saldoService.fetchCombinedData(this.mode, this.category).subscribe((combined: Combined[]) => {
+      combined.forEach((items, index) => {
+        this.chart.data[index].category_amount = items.category_amount;
+      });
+      this.chart.validateData();
+      // for (const items of combined) {
+      //   data.push({
+      //     date: items.date,
+      //     name: items.date,
+      //     balance: items.balance,
+      //     income: items.income,
+      //     expenses: items.expenses,
+      //     profit: items.profit,
+      //     loss: items.loss,
+      //     category_amount: items.category_amount });
+      // }
+      // this.chart.data = data;
+    });
+  }
+
   private populateChart() {
-    return this.saldoService.fetchCombinedData(this.mode).subscribe((combined: Combined[]) => {
+    return this.saldoService.fetchCombinedData(this.mode, this.category).subscribe((combined: Combined[]) => {
       const data = [];
       for (const items of combined) {
         data.push({
@@ -136,7 +196,8 @@ export class HistoryChartsComponent implements OnInit, OnDestroy, AfterViewInit 
           income: items.income,
           expenses: items.expenses,
           profit: items.profit,
-          loss: items.loss });
+          loss: items.loss,
+          category_amount: items.category_amount });
       }
       this.chart.data = data;
     });

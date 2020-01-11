@@ -15,6 +15,7 @@ export interface Combined {
   expenses: number;
   profit: number;
   loss: number;
+  category_amount: number;
 }
 
 export interface Category {
@@ -37,9 +38,9 @@ export class SaldoService {
 
   constructor(private httpClient: HttpClient) {}
 
-  fetchCombinedData(mode: string) {
+  fetchCombinedData(mode: string, category: string) {
     const url = 'http://localhost:5002/combined';
-    const params = new HttpParams().set('mode', mode);
+    const params = new HttpParams().set('mode', mode).append('category', category);
     return this.httpClient.get<Combined[]>(url, {params} );
   }
 

@@ -20,13 +20,12 @@ export class CategoryPieChartComponent implements OnInit, AfterViewInit {
               private saldoService: SaldoService) {}
 
   ngOnInit() {
-  }
-
-  ngAfterViewInit() {
     // Themes begin
     am4core.useTheme(am4themes_animated);
     // Themes end
+  }
 
+  ngAfterViewInit() {
     // create chart
     const chart = am4core.create(
       'category-pie-chart-div',

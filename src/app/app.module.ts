@@ -6,7 +6,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { HttpClientModule } from '@angular/common/http';
 import { HomeComponent } from './home/home.component';
 import { AccountsComponent } from './accounts/accounts.component';
-import { CategoryChartComponent } from './accounts/category-chart/category-chart.component';
 import { HistoryChartsComponent } from './accounts/history-charts/history-charts.component';
 import { CategoryPieChartComponent } from './accounts/category-pie-chart/category-pie-chart.component';
 
@@ -15,7 +14,6 @@ import { CategoryPieChartComponent } from './accounts/category-pie-chart/categor
     AppComponent,
     AccountsComponent,
     HomeComponent,
-    CategoryChartComponent,
     HistoryChartsComponent,
     CategoryPieChartComponent,
   ],

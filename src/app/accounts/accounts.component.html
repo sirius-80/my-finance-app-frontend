@@ -10,10 +10,10 @@
     <app-history-charts></app-history-charts>
   </div>
   <div class="col-sm-6">
-    <select class="btn btn-secondary" (change)="onCategory($event.target.value)">
+    <label for="category">Category: </label>
+    <select class="btn btn-secondary" (change)="onCategory($event.target.value)" id="category">
       <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
     </select>
-    <app-category-chart></app-category-chart>
     <app-category-pie-chart></app-category-pie-chart>
   </div>
 </div>
