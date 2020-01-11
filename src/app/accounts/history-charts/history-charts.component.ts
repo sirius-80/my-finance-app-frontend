@@ -5,6 +5,7 @@ import am4themes_animated from '@amcharts/amcharts4/themes/animated';
 import { SaldoService, Balance } from '../saldo.service';
 import am4lang_nl_NL from '@amcharts/amcharts4/lang/nl_NL';
 import { Combined } from '../saldo.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-history-charts',
@@ -12,6 +13,7 @@ import { Combined } from '../saldo.service';
   styleUrls: ['./history-charts.component.css']
 })
 export class HistoryChartsComponent implements OnInit, OnDestroy, AfterViewInit {
+  subscription: Subscription;
   mode = 'monthly';
   private chart: am4charts.XYChart;
   constructor(private zone: NgZone,
@@ -36,25 +38,24 @@ export class HistoryChartsComponent implements OnInit, OnDestroy, AfterViewInit 
 
       const dateAxis = chart.xAxes.push(new am4charts.DateAxis());
       dateAxis.renderer.grid.template.location = 0;
-      dateAxis.events.on('datarangechanged', (event) => {
-        this.saldoService.dateRange.next({min: event.target.minZoomed, max: event.target.maxZoomed});
-        // console.log('Data-range changed: ', event);
-      });
 
       const balanceSeries = this.createBalanceSubchart(chart);
       this.createIncomeExpensesSubchart(chart);
 
-      chart.cursor = new am4charts.XYCursor();
+      // chart.cursor = new am4charts.XYCursor();
       const scrollbarX = new am4charts.XYChartScrollbar();
       scrollbarX.series.push(balanceSeries);
+      // scrollbarX.updateWhileMoving = false;
       chart.scrollbarX = scrollbarX;
       this.chart = chart;
       this.chart.numberFormatter.numberFormat = '€ #,###.';
 
       scrollbarX.events.on('rangechanged', (event) => {
-        this.saldoService.dateRange.next({min: dateAxis.minZoomed, max: dateAxis.maxZoomed});
-      });
-      this.saldoService.granularity.subscribe((granularity) => {
+        console.log('Scrollbar!');
+        this.saldoService.setDateRange(dateAxis.minZoomed, dateAxis.maxZoomed);
+        return event;
+      }, this);
+      this.subscription = this.saldoService.granularity.subscribe((granularity) => {
         this.mode = granularity;
         this.zone.runOutsideAngular(() => {
           this.populateChart();
@@ -148,5 +149,8 @@ export class HistoryChartsComponent implements OnInit, OnDestroy, AfterViewInit 
         this.chart = null;
       }
     });
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 }

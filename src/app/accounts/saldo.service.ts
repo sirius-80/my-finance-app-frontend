@@ -30,6 +30,7 @@ export interface CategoryData {
 
 @Injectable()
 export class SaldoService {
+  dateRangeTimout = null;
   dateRange = new Subject<{min: number, max: number}>();
   granularity = new Subject<string>();
   category = new Subject<string>();
@@ -65,5 +66,14 @@ export class SaldoService {
 
   setCategory(category: string) {
     this.category.next(category);
+  }
+
+  setDateRange(min: number, max: number) {
+    if (this.dateRangeTimout) {
+      clearTimeout(this.dateRangeTimout);
+    }
+    this.dateRangeTimout = setTimeout(() => {
+      this.dateRange.next({min, max});
+    }, 400);
   }
 }

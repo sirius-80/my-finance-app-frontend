@@ -10,7 +10,7 @@
     <app-history-charts></app-history-charts>
   </div>
   <div class="col-sm-6">
-    <select class="btn" (change)="onCategory($event.target.value)">
+    <select class="btn btn-secondary" (change)="onCategory($event.target.value)">
       <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
     </select>
     <app-category-chart></app-category-chart>

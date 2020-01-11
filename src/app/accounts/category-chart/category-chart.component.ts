@@ -48,8 +48,7 @@ export class CategoryChartComponent implements OnInit, AfterViewInit, OnDestroy 
       dateAxis.renderer.minGridDistance = 10;
 
       const valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-      valueAxis.renderer.minWidth = 100;
-
+      
       // Create series
       const amount = chart.series.push(new am4charts.ColumnSeries());
       amount.dataFields.valueY = 'amount';
@@ -60,7 +59,7 @@ export class CategoryChartComponent implements OnInit, AfterViewInit, OnDestroy 
       amount.clustered = false;
 
       // Create active state
-      let activeState = amount.columns.template.states.create('active');
+      const activeState = amount.columns.template.states.create('active');
       activeState.properties.fill = chart.colors.getIndex(4);
 
       const columnTemplate = amount.columns.template;
@@ -72,8 +71,6 @@ export class CategoryChartComponent implements OnInit, AfterViewInit, OnDestroy 
         // console.log('Update range!', range);
         dateAxis.min = range.min;
         dateAxis.max = range.max;
-        dateAxis.validateDataRange();
-        this.chart.validate();
       });
       this.saldoService.granularity.subscribe((granularity) => {
         this.mode = granularity;
@@ -107,10 +104,8 @@ export class CategoryChartComponent implements OnInit, AfterViewInit, OnDestroy 
       for (const balance of balances) {
         data.push({ date: balance.date, name: this.category, amount: balance.amount });
       }
-      // console.log('Populate category chart ', this.category, data);
 
       this.chart.data = data;
-      this.chart.validate();
     });
   }
 
