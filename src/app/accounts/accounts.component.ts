@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
-import { SaldoService, Category } from './saldo.service';
+import { Component, OnInit, Injectable } from '@angular/core';
+import { SaldoService } from './saldo.service';
+import { Category } from './accounts.model';
 
 @Component({
   templateUrl: './accounts.component.html',
   styleUrls: ['./accounts.component.css'],
   providers: [SaldoService],
 })
+@Injectable()
 export class AccountsComponent implements OnInit {
   categories: Category[];
   constructor(private saldoService: SaldoService) {}

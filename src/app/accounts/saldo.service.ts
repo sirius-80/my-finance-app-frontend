@@ -2,32 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams, HttpRequest } from '@angular/common/http';
 import { number } from '@amcharts/amcharts4/core';
 import { Subject } from 'rxjs';
-
-export interface Balance {
-  date: Date;
-  amount: number;
-}
-
-export interface Combined {
-  date: Date;
-  balance: number;
-  income: number;
-  expenses: number;
-  profit: number;
-  loss: number;
-  category_amount: number;
-}
-
-export interface Category {
-  id: string;
-  name: string;
-}
-
-export interface CategoryData {
-  name: string;
-  value: number;
-  children: CategoryData[];
-}
+import { Combined, CategoryData, Balance, Category } from './accounts.model';
 
 @Injectable()
 export class SaldoService {

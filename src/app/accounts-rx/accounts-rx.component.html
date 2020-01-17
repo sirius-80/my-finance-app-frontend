@@ -1,0 +1,9 @@
+<div class="row">
+  <div class="col-sm-12">
+    <button class="btn btn-secondary" (click)="onLoadCategories()">Load transaction</button>
+    <label for="category">Category: </label>
+    <select class="btn btn-secondary" (change)="onCategory($event.target.value)" id="category">
+      <option *ngFor="let category of ( accounts | async ).categories" [value]="category.id">{{ category.name }}</option>
+    </select>
+  </div>
+</div>

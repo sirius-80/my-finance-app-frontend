@@ -3,7 +3,8 @@ import * as am4core from '@amcharts/amcharts4/core';
 import * as am4charts from '@amcharts/amcharts4/charts';
 import * as am4plugins_sunburst from '@amcharts/amcharts4/plugins/sunburst';
 import am4themes_animated from '@amcharts/amcharts4/themes/animated';
-import { SaldoService, CategoryData } from '../saldo.service';
+import { SaldoService } from '../saldo.service';
+import { CategoryData } from "../accounts.model";
 import { Subscription } from 'rxjs';
 
 @Component({
