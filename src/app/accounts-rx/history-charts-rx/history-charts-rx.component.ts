@@ -7,6 +7,7 @@ import am4lang_nl_NL from '@amcharts/amcharts4/lang/nl_NL';
 
 import { AppState } from '../../store/app.reducers';
 import * as AccountsActions from '../store/accounts.actions';
+import { cursorTo } from 'readline';
 
 
 @Component({
@@ -43,6 +44,7 @@ export class HistoryChartsRxComponent implements OnInit, OnDestroy, AfterViewIni
       this.createIncomeExpensesSubchart(chart);
 
       chart.cursor = new am4charts.XYCursor();
+      chart.cursor.lineY.disabled = true;
       const scrollbarX = new am4charts.XYChartScrollbar();
       scrollbarX.series.push(balanceSeries);
       chart.scrollbarX = scrollbarX;
@@ -87,6 +89,7 @@ export class HistoryChartsRxComponent implements OnInit, OnDestroy, AfterViewIni
 
   private createIncomeExpensesSubchart(chart: am4charts.XYChart) {
     const valueAxisIncomeExpenses = chart.yAxes.push(new am4charts.ValueAxis());
+    valueAxisIncomeExpenses.cursorTooltipEnabled = false;
     valueAxisIncomeExpenses.marginTop = 50;
 
     const interfaceColors = new am4core.InterfaceColorSet();
@@ -139,13 +142,12 @@ export class HistoryChartsRxComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   private populateChart() {
-    this.store.select(state => state.accounts.monthlyData).subscribe(
-      (monthlyData) => {
+    this.store.select(state => state.accounts.currentData).subscribe(
+      (currentData) => {
         const data = [];
-        for (const items of monthlyData) {
+        for (const items of currentData) {
           data.push({
             date: items.date,
-            name: items.date,
             balance: items.balance,
             income: items.income,
             expenses: items.expenses,

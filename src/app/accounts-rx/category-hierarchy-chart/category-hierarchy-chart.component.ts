@@ -76,7 +76,7 @@ export class CategoryHierarchyChartComponent implements OnInit, AfterViewInit {
     level2SeriesTemplate.fillOpacity = 0.5;
     level2SeriesTemplate.hiddenInLegend = true;
 
-    chart.legend = new am4charts.Legend();
+    // chart.legend = new am4charts.Legend();
 
     this.populateChart(chart);
     this.store.select(state => state.accounts.selectedCategory).subscribe(

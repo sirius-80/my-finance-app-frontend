@@ -31,7 +31,19 @@ export class AccountsEffects {
     mergeMap((action: accountsActions.LoadAllCategoryData) => {
       return [
         new accountsActions.LoadCategoryData(action.payload),
-        new accountsActions.LoadMonthlyCategoryData(action.payload)
+        new accountsActions.LoadMonthlyCategoryData(action.payload),
+        new accountsActions.LoadYearlyCategoryData(action.payload)
+      ];
+    })
+  );
+
+  @Effect()
+  combinedDataTrigger = this.actions$.pipe(
+    ofType(accountsActions.LOAD_COMBINED_DATA),
+    mergeMap((action: accountsActions.LoadCombinedData) => {
+      return [
+        new accountsActions.LoadMonthlyCombinedData(),
+        new accountsActions.LoadYearlyCombinedData(),
       ];
     })
   );
@@ -51,6 +63,24 @@ export class AccountsEffects {
     }),
     map((data: Balance[]) => {
       return new accountsActions.SetMonthlyCategoryData(data);
+    })
+  );
+
+  @Effect()
+  yearlyCategoryDataFetch = this.actions$.pipe(
+    ofType(accountsActions.LOAD_YEARLY_CATEGORY_DATA),
+    switchMap((action: accountsActions.LoadYearlyCategoryData) => {
+      let url = 'http://localhost:5002/categories/';
+      if (action.payload) {
+        url += action.payload.id;
+      } else {
+        url += '0';
+      }
+      const params = new HttpParams().set('mode', 'yearly');
+      return this.httpClient.get<Balance[]>(url, {params} );
+    }),
+    map((data: Balance[]) => {
+      return new accountsActions.SetYearlyCategoryData(data);
     })
   );
 
@@ -84,6 +114,26 @@ export class AccountsEffects {
     mergeMap((combined: Combined[]) => {
       const actions = [];
       actions.push(new accountsActions.SetMonthlyCombinedData(combined));
+      if (combined.length > 0) {
+        const start = new Date(combined[0].date);
+        const end = new Date(combined[combined.length - 1].date);
+        actions.push(new accountsActions.SetPeriod({start, end}));
+      }
+      return actions;
+    })
+  );
+
+  @Effect()
+  yearlyCombinedDataFetch = this.actions$.pipe(
+    ofType(accountsActions.LOAD_YEARLY_COMBINED_DATA),
+    switchMap((action: accountsActions.LoadYearlyCombinedData) => {
+      const url = 'http://localhost:5002/combined';
+      const params = new HttpParams().set('mode', 'yearly');
+      return this.httpClient.get<Combined[]>(url, {params} );
+    }),
+    mergeMap((combined: Combined[]) => {
+      const actions = [];
+      actions.push(new accountsActions.SetYearlyCombinedData(combined));
       if (combined.length > 0) {
         const start = new Date(combined[0].date);
         const end = new Date(combined[combined.length - 1].date);

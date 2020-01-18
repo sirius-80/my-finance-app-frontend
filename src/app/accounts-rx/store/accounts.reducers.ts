@@ -22,8 +22,10 @@ export interface State  {
   categoryData: CategoryData[];
   categoryMonthlyData: Balance[];
   categoryYearlyData: Balance[];
+  currentCategoryData: Balance[];
   monthlyData: Combined[];
   yearlyData: Combined[];
+  currentData: Combined[];
 }
 
 const initialState: State = {
@@ -37,8 +39,10 @@ const initialState: State = {
   categoryData: null,
   categoryMonthlyData: [],
   categoryYearlyData: [],
+  currentCategoryData: [],
   monthlyData: [],
   yearlyData: [],
+  currentData: [],
 };
 
 export function accountsReducer(state = initialState, action: accountsActions.accountsActions) {
@@ -61,9 +65,17 @@ export function accountsReducer(state = initialState, action: accountsActions.ac
         selectedCategory: selected
       };
     case accountsActions.SET_GRANULARITY:
+      let categoryData = state.categoryMonthlyData;
+      let balanceData = state.monthlyData;
+      if (action.payload === 'yearly') {
+        categoryData = state.categoryYearlyData;
+        balanceData = state.yearlyData;
+      }
       return {
         ...state,
-        granularity: action.payload
+        granularity: action.payload,
+        currentCategoryData: categoryData,
+        currentData: balanceData,
       };
     case accountsActions.SET_PERIOD:
       return {
@@ -71,15 +83,25 @@ export function accountsReducer(state = initialState, action: accountsActions.ac
         period: action.payload,
       };
     case accountsActions.SET_MONTHLY_COMBINED_DATA:
+      let currentData = action.payload;
+      if (state.granularity === 'yearly') {
+        currentData = state.yearlyData;
+      }
       return {
         ...state,
         monthlyData: action.payload,
+        currentData,
       };
       break;
     case accountsActions.SET_YEARLY_COMBINED_DATA:
+      let currentData2 = action.payload;
+      if (state.granularity === 'monthly') {
+        currentData2 = state.monthlyData;
+      }
       return {
         ...state,
         yearlyData: action.payload,
+        currentData: currentData2,
       };
       break;
     case accountsActions.SET_CATEGORY_DATA:
@@ -88,10 +110,25 @@ export function accountsReducer(state = initialState, action: accountsActions.ac
         categoryData: action.payload,
       };
     case accountsActions.SET_MONTHLY_CATEGORY_DATA:
+      let currentCategoryData = action.payload;
+      if (state.granularity === 'yearly') {
+        currentCategoryData = state.categoryYearlyData;
+      }
       return {
         ...state,
         categoryMonthlyData: action.payload,
+        currentCategoryData,
       };
+    case accountsActions.SET_YEARLY_CATEGORY_DATA:
+      let currentCategoryData2 = action.payload;
+      if (state.granularity === 'monthly') {
+        currentCategoryData2 = state.categoryMonthlyData;
+      }
+      return {
+        ...state,
+        categoryYearlyData: action.payload,
+        currentCategoryData: currentCategoryData2,
+      }
     default:
       return state;
   }

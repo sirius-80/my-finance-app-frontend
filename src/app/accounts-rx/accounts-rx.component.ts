@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import * as fromAccounts from './store/accounts.reducers';
 import * as AccountsActions from './store/accounts.actions';
 import { AppState } from '../store/app.reducers';
+import { Category } from './accounts.model';
 
 
 @Component({
@@ -14,18 +15,20 @@ import { AppState } from '../store/app.reducers';
 })
 export class AccountsRxComponent implements OnInit {
   accounts: Observable<fromAccounts.State>;
-  granularities = ['monthly', 'yearly'];
-  selectedGranularity = 'monthly';
+  categories: Observable<Category[]>;
+  period: Observable<{start: Date, end: Date}>;
 
   constructor(private store: Store<AppState>) { }
 
   ngOnInit() {
     this.accounts = this.store.select('accounts');
+    this.categories = this.store.select(state => state.accounts.categories);
+    this.period = this.store.select(state => state.accounts.period);
   }
 
   onLoadData() {
     this.store.dispatch(new AccountsActions.LoadCategories());
-    this.store.dispatch(new AccountsActions.LoadMonthlyCombinedData());
+    this.store.dispatch(new AccountsActions.LoadCombinedData());
     this.store.select(state => state.accounts.selectedCategory).subscribe(
       category => {
         this.store.dispatch(new AccountsActions.LoadAllCategoryData(category));

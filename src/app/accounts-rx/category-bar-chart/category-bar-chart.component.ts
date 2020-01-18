@@ -30,6 +30,7 @@ export class CategoryBarChartComponent implements OnInit, AfterViewInit, OnDestr
       const chart = am4core.create('category-bar-chart-div', am4charts.XYChart);
       chart.leftAxesContainer.layout = 'vertical';
       chart.language.locale = am4lang_nl_NL;
+      chart.zoomOutButton.disabled = true;
 
       const dateAxis = chart.xAxes.push(new am4charts.DateAxis());
       dateAxis.renderer.grid.template.location = 0;
@@ -39,6 +40,7 @@ export class CategoryBarChartComponent implements OnInit, AfterViewInit, OnDestr
       this.chart = chart;
       this.chart.numberFormatter.numberFormat = '€ #,###.';
       chart.cursor = new am4charts.XYCursor();
+      chart.cursor.lineY.disabled = true;
 
       this.populateChart();
 
@@ -50,6 +52,7 @@ export class CategoryBarChartComponent implements OnInit, AfterViewInit, OnDestr
 
   private createCategorySeries(chart: am4charts.XYChart) {
     const valueAxisCategory = chart.yAxes.push(new am4charts.ValueAxis());
+    valueAxisCategory.cursorTooltipEnabled = false;
 
     const interfaceColors = new am4core.InterfaceColorSet();
     valueAxisCategory.renderer.gridContainer.background.fill = interfaceColors.getFor('alternativeBackground');
@@ -59,26 +62,20 @@ export class CategoryBarChartComponent implements OnInit, AfterViewInit, OnDestr
 
     // Create series
     const amount = chart.series.push(new am4charts.ColumnSeries());
-    amount.dataFields.valueY = 'category_amount';
+    amount.dataFields.valueY = 'amount';
     amount.dataFields.dateX = 'date';
     amount.name = 'Amount';
-    amount.columns.template.tooltipText = '{dateX}: Amount: {category_amount.formatNumber("€ #,###.")}';
+    amount.columns.template.tooltipText = '{dateX}: Amount: {amount.formatNumber("€ #,###.")}';
     amount.columns.template.fillOpacity = 0.8;
     amount.clustered = false;
     amount.yAxis = valueAxisCategory;
   }
 
   private populateChart() {
-    this.store.select(state => state.accounts.categoryMonthlyData).subscribe(
-      (monthlyData) => {
-        const data = [];
-        for (const items of monthlyData) {
-          data.push({
-            date: items.date,
-            category_amount: items.amount,
-          });
-        }
-        this.chart.data = data;
+    this.store.select(state => state.accounts.currentCategoryData).subscribe(
+      (currentCategoryData) => {
+        console.log('Update category bar chart', currentCategoryData);
+        this.chart.data = currentCategoryData;
       });
   }
 
