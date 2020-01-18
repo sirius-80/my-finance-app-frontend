@@ -1,9 +1,15 @@
 import { Action } from '@ngrx/store';
-import { Category, Combined } from '../accounts.model';
+import { Category, Combined, Balance } from '../accounts.model';
+import { CategoryData } from './accounts.reducers';
 
 export const LOAD_CATEGORIES = 'LOAD_CATEGORIES';
 export const SET_CATEGORIES = 'SET_CATEGORIES';
 export const SELECT_CATEGORY = 'SELECT_CATEGORY';
+export const LOAD_ALL_CATEGORY_DATA = 'LOAD_ALL_CATEGORY_DATA';
+export const LOAD_MONTHLY_CATEGORY_DATA = 'LOAD_MONTHLY_CATEGORY_DATA';
+export const SET_MONTHLY_CATEGORY_DATA = 'SET_MONTHLY_CATEGORY_DATA';
+export const LOAD_CATEGORY_DATA = 'LOAD_CATEGORY_DATA';
+export const SET_CATEGORY_DATA = 'SET_CATEGORY_DATA';
 export const LOAD_MONTHLY_COMBINED_DATA = 'LOAD_MONTHLY_COMBINED_DATA';
 export const LOAD_COMBINED_DATA = 'LOAD_COMBINED_DATA';
 export const LOAD_YEARLY_COMBINED_DATA = 'LOAD_YEARLY_COMBINED_DATA';
@@ -14,6 +20,31 @@ export const SET_PERIOD = 'SET_PERIOD';
 
 export class LoadCategories implements Action {
   readonly type = LOAD_CATEGORIES;
+}
+
+export class LoadAllCategoryData implements Action {
+  readonly type = LOAD_ALL_CATEGORY_DATA;
+  constructor(public payload: Category) {}
+}
+
+export class LoadCategoryData implements Action {
+  readonly type = LOAD_CATEGORY_DATA;
+  constructor(public payload: Category) {}
+}
+
+export class SetCategoryData implements Action {
+  readonly type = SET_CATEGORY_DATA;
+  constructor(public payload: CategoryData[]) {}
+}
+
+export class SetMonthlyCategoryData implements Action {
+  readonly type = SET_MONTHLY_CATEGORY_DATA;
+  constructor(public payload: Balance[]) {}
+}
+
+export class LoadMonthlyCategoryData implements Action {
+  readonly type = LOAD_MONTHLY_CATEGORY_DATA;
+  constructor(public payload: Category) {}
 }
 
 export class LoadCombinedData implements Action {
@@ -60,6 +91,7 @@ export class SetPeriod implements Action {
 }
 
 export type accountsActions = LoadCategories | SetCategories | SelectCategory
+   | LoadAllCategoryData | LoadCategoryData | LoadMonthlyCategoryData | SetCategoryData | SetMonthlyCategoryData
    | LoadCombinedData
    | LoadMonthlyCombinedData | SetMonthlyCombinedData
    | LoadYearlyCombinedData | SetYearlyCombinedData

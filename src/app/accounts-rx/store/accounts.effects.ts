@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Effect, Actions, ofType } from '@ngrx/effects';
-import { switchMap, map, mergeMap } from 'rxjs/operators';
+import { switchMap, map, mergeMap, withLatestFrom } from 'rxjs/operators';
 
 import { AppState } from 'src/app/store/app.reducers';
 import * as accountsActions from './accounts.actions';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Category, Combined } from '../accounts.model';
+import { Category, Combined, Balance } from '../accounts.model';
+import { CategoryData } from './accounts.reducers';
 
 
 @Injectable()
@@ -20,8 +21,55 @@ export class AccountsEffects {
       return this.httpClient.get<Category[]>(url);
     }),
     map((categories: Category[]) => {
-      console.log('Dispatching SET_CATEGORIES', categories);
       return new accountsActions.SetCategories(categories);
+    })
+  );
+
+  @Effect()
+  categoryDataTrigger = this.actions$.pipe(
+    ofType(accountsActions.LOAD_ALL_CATEGORY_DATA),
+    mergeMap((action: accountsActions.LoadAllCategoryData) => {
+      return [
+        new accountsActions.LoadCategoryData(action.payload),
+        new accountsActions.LoadMonthlyCategoryData(action.payload)
+      ];
+    })
+  );
+
+  @Effect()
+  monthlyCategoryDataFetch = this.actions$.pipe(
+    ofType(accountsActions.LOAD_MONTHLY_CATEGORY_DATA),
+    switchMap((action: accountsActions.LoadMonthlyCategoryData) => {
+      let url = 'http://localhost:5002/categories/';
+      if (action.payload) {
+        url += action.payload.id;
+      } else {
+        url += '0';
+      }
+      const params = new HttpParams().set('mode', 'monthly');
+      return this.httpClient.get<Balance[]>(url, {params} );
+    }),
+    map((data: Balance[]) => {
+      return new accountsActions.SetMonthlyCategoryData(data);
+    })
+  );
+
+  @Effect()
+  categoryDataFetch = this.actions$.pipe(
+    ofType(accountsActions.LOAD_CATEGORY_DATA),
+    withLatestFrom(this.store.select(state => state.accounts.period)),
+    switchMap(([action, period]: [accountsActions.LoadCategoryData, {start: Date, end: Date}]) => {
+      const params = new HttpParams().append('start', '' + period.start.getTime()).append('end', '' + period.end.getTime());
+      let url = 'http://localhost:5002/combined_categories/';
+      if (action.payload) {
+        url += action.payload.id;
+      } else {
+        url += '0';
+      }
+      return this.httpClient.get<CategoryData[]>(url, {params});
+    }),
+    map((data: CategoryData[]) => {
+      return new accountsActions.SetCategoryData(data);
     })
   );
 
@@ -37,8 +85,8 @@ export class AccountsEffects {
       const actions = [];
       actions.push(new accountsActions.SetMonthlyCombinedData(combined));
       if (combined.length > 0) {
-        const start = combined[0].date;
-        const end = combined[combined.length - 1].date;
+        const start = new Date(combined[0].date);
+        const end = new Date(combined[combined.length - 1].date);
         actions.push(new accountsActions.SetPeriod({start, end}));
       }
       return actions;

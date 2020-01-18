@@ -14,9 +14,3 @@ export interface Combined {
 export class Category {
   constructor(public id: string, public name: string) {}
 }
-
-export interface CategoryData {
-  name: string;
-  value: number;
-  children: CategoryData[];
-}

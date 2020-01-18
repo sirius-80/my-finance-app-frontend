@@ -5,8 +5,7 @@ import * as am4charts from '@amcharts/amcharts4/charts';
 import am4themes_animated from '@amcharts/amcharts4/themes/animated';
 import am4lang_nl_NL from '@amcharts/amcharts4/lang/nl_NL';
 
-import { AppState } from 'src/app/store/app.reducers';
-import * as fromAccounts from '../store/accounts.reducers';
+import { AppState } from '../../store/app.reducers';
 import * as AccountsActions from '../store/accounts.actions';
 
 
@@ -25,7 +24,6 @@ export class HistoryChartsRxComponent implements OnInit, OnDestroy, AfterViewIni
 
   ngOnInit() {
     am4core.useTheme(am4themes_animated);
-
   }
 
   ngAfterViewInit(): void {
@@ -47,7 +45,6 @@ export class HistoryChartsRxComponent implements OnInit, OnDestroy, AfterViewIni
       chart.cursor = new am4charts.XYCursor();
       const scrollbarX = new am4charts.XYChartScrollbar();
       scrollbarX.series.push(balanceSeries);
-      // scrollbarX.updateWhileMoving = false;
       chart.scrollbarX = scrollbarX;
       this.chart = chart;
       this.chart.numberFormatter.numberFormat = '€ #,###.';
@@ -56,7 +53,6 @@ export class HistoryChartsRxComponent implements OnInit, OnDestroy, AfterViewIni
       this.populateChart();
 
       dateAxis.events.on('selectionextremeschanged', (event) => {
-        console.log('Date-range changed: ', new Date(event.target.minZoomed), new Date(event.target.maxZoomed));
         this.store.dispatch(new AccountsActions.SetPeriod(
           {start: new Date(event.target.minZoomed), end: new Date(event.target.maxZoomed)}));
         return event;

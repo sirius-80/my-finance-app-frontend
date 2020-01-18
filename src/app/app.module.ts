@@ -17,6 +17,8 @@ import { AccountsRxComponent } from './accounts-rx/accounts-rx.component';
 import * as appReducers from './store/app.reducers';
 import { environment } from 'src/environments/environment';
 import { AccountsEffects } from './accounts-rx/store/accounts.effects';
+import { CategoryBarChartComponent } from './accounts-rx/category-bar-chart/category-bar-chart.component';
+import { CategoryHierarchyChartComponent } from './accounts-rx/category-hierarchy-chart/category-hierarchy-chart.component';
 
 @NgModule({
   declarations: [
@@ -27,6 +29,8 @@ import { AccountsEffects } from './accounts-rx/store/accounts.effects';
     HistoryChartsRxComponent,
     CategoryPieChartComponent,
     AccountsRxComponent,
+    CategoryBarChartComponent,
+    CategoryHierarchyChartComponent,
   ],
   imports: [
     BrowserModule,

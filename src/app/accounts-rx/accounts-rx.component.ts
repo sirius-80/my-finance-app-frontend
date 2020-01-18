@@ -26,6 +26,11 @@ export class AccountsRxComponent implements OnInit {
   onLoadData() {
     this.store.dispatch(new AccountsActions.LoadCategories());
     this.store.dispatch(new AccountsActions.LoadMonthlyCombinedData());
+    this.store.select(state => state.accounts.selectedCategory).subscribe(
+      category => {
+        this.store.dispatch(new AccountsActions.LoadAllCategoryData(category));
+      }
+    );
   }
 
   onCategory(categoryId: string) {
