@@ -1,9 +1,26 @@
 <div class="row">
   <div class="col-sm-12">
-    <button class="btn btn-secondary" (click)="onLoadCategories()">Load transaction</button>
+    <button class="btn btn-secondary" (click)="onLoadData()">Load transaction</button>
     <label for="category">Category: </label>
     <select class="btn btn-secondary" (change)="onCategory($event.target.value)" id="category">
       <option *ngFor="let category of ( accounts | async ).categories" [value]="category.id">{{ category.name }}</option>
     </select>
+    <ul class="list-group">
+      <li class="list-group-item" *ngFor="let granularity of granularities">
+        <input type="radio" [(ngModel)]="selectedGranularity" name="list_name" value="{{granularity}}" (change)="onGranularityChange(granularity)"/>
+          {{granularity}}
+      </li>
+    </ul>
+    <hr>
+    <p *ngIf="(accounts | async).selectedCategory">Selected category {{ ( accounts | async ).selectedCategory.name }} ( {{( accounts | async ).selectedCategory.id }})</p>
+    <p>Granularity: {{ ( accounts | async ).granularity }}</p>
+    <p>Period: {{ (accounts|async).period.start | date:'longDate' }} ... {{ (accounts|async).period.end | date:'longDate' }}</p>
+    <p>CategoryData: {{ (accounts|async).categoryData }}</p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-6">
+    <app-history-charts-rx></app-history-charts-rx>
   </div>
 </div>

@@ -14,6 +14,8 @@ import { AppState } from '../store/app.reducers';
 })
 export class AccountsRxComponent implements OnInit {
   accounts: Observable<fromAccounts.State>;
+  granularities = ['monthly', 'yearly'];
+  selectedGranularity = 'monthly';
 
   constructor(private store: Store<AppState>) { }
 
@@ -21,13 +23,18 @@ export class AccountsRxComponent implements OnInit {
     this.accounts = this.store.select('accounts');
   }
 
-  onLoadCategories() {
-    console.log('Dispatching LOAD_CATEGORIES');
+  onLoadData() {
     this.store.dispatch(new AccountsActions.LoadCategories());
+    this.store.dispatch(new AccountsActions.LoadMonthlyCombinedData());
   }
 
-  onCategory(category) {
-    console.log(category);
+  onCategory(categoryId: string) {
+    console.log(categoryId);
 
+    this.store.dispatch(new AccountsActions.SelectCategory(categoryId));
+  }
+
+  onGranularityChange(granularity: string) {
+    this.store.dispatch(new AccountsActions.SetGranularity(granularity));
   }
 }
