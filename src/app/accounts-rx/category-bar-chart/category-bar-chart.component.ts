@@ -7,6 +7,7 @@ import am4lang_nl_NL from '@amcharts/amcharts4/lang/nl_NL';
 
 import { AppState } from '../../store/app.reducers';
 import { Category } from '../accounts.model';
+import * as AccountsActions from '../store/accounts.actions';
 
 
 @Component({
@@ -46,6 +47,20 @@ export class CategoryBarChartComponent implements OnInit, AfterViewInit, OnDestr
 
       this.store.select(state => state.accounts.period).subscribe(period => {
         dateAxis.zoomToDates(period.start, period.end);
+      });
+
+      chart.cursor.behavior = 'selectX';
+      chart.cursor.events.on('selectended', ev => {
+        const range = ev.target.xRange;
+        if (range) {
+          const axis = ev.target.chart.xAxes.getIndex(0);
+          const start = axis.getSeriesDataItem(chart.series.getIndex(0), axis.toAxisPosition(range.start)).dateX;
+          const end = axis.getSeriesDataItem(chart.series.getIndex(0), axis.toAxisPosition(range.end)).dateX;
+          console.log('Selected from ', start, ' to ', end);
+          this.store.dispatch(new AccountsActions.SelectPeriod({start, end}));
+        } else {
+          this.store.dispatch(new AccountsActions.SelectPeriod(null));
+        }
       });
     });
   }

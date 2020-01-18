@@ -26,6 +26,7 @@ export interface State  {
   monthlyData: Combined[];
   yearlyData: Combined[];
   currentData: Combined[];
+  selectedPeriod: {start: Date, end: Date};
 }
 
 const initialState: State = {
@@ -43,6 +44,7 @@ const initialState: State = {
   monthlyData: [],
   yearlyData: [],
   currentData: [],
+  selectedPeriod: null,
 };
 
 export function accountsReducer(state = initialState, action: accountsActions.accountsActions) {
@@ -128,7 +130,12 @@ export function accountsReducer(state = initialState, action: accountsActions.ac
         ...state,
         categoryYearlyData: action.payload,
         currentCategoryData: currentCategoryData2,
-      }
+      };
+    case accountsActions.SELECT_PERIOD:
+      return {
+        ...state,
+        selectedPeriod: action.payload,
+      };
     default:
       return state;
   }

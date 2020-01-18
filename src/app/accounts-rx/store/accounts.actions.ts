@@ -22,6 +22,7 @@ export const SET_YEARLY_COMBINED_DATA = 'SET_YEARLY_COMBINED_DATA';
 
 export const SET_GRANULARITY = 'SET_GRANULARITY';
 export const SET_PERIOD = 'SET_PERIOD';
+export const SELECT_PERIOD = 'SELECT_PERIOD';
 
 export class LoadCategories implements Action {
   readonly type = LOAD_CATEGORIES;
@@ -104,6 +105,11 @@ export class SetPeriod implements Action {
   constructor(public payload: {start: Date, end: Date}) {}
 }
 
+export class SelectPeriod implements Action {
+  readonly type = SELECT_PERIOD;
+  constructor(public payload: {start: Date, end: Date}) {}
+}
+
 export type accountsActions = LoadCategories | SetCategories | SelectCategory
    | LoadAllCategoryData | LoadCategoryData | SetCategoryData
    | LoadMonthlyCategoryData | SetMonthlyCategoryData
@@ -113,5 +119,6 @@ export type accountsActions = LoadCategories | SetCategories | SelectCategory
    | LoadYearlyCombinedData | SetYearlyCombinedData
    | SetGranularity
    | SetPeriod
+   | SelectPeriod
    ;
 
