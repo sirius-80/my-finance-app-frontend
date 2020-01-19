@@ -6,6 +6,7 @@ import * as fromAccounts from './store/accounts.reducers';
 import * as AccountsActions from './store/accounts.actions';
 import { AppState } from '../store/app.reducers';
 import { Category } from './accounts.model';
+import { Router, ActivatedRoute } from '@angular/router';
 
 
 @Component({
@@ -18,12 +19,15 @@ export class AccountsRxComponent implements OnInit {
   categories: Observable<Category[]>;
   period: Observable<{start: Date, end: Date}>;
 
-  constructor(private store: Store<AppState>) { }
+  constructor(private store: Store<AppState>,
+              private router: Router,
+              private route: ActivatedRoute) { }
 
   ngOnInit() {
     this.accounts = this.store.select('accounts');
     this.categories = this.store.select(state => state.accounts.categories);
     this.period = this.store.select(state => state.accounts.period);
+    this.onCategory('0');
   }
 
   onLoadData() {
@@ -38,7 +42,7 @@ export class AccountsRxComponent implements OnInit {
 
   onCategory(categoryId: string) {
     console.log(categoryId);
-
+    this.router.navigate([categoryId], {relativeTo: this.route});
     this.store.dispatch(new AccountsActions.SelectCategory(categoryId));
   }
 

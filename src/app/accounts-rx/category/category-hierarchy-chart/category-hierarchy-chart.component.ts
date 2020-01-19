@@ -7,7 +7,7 @@ import { Store } from '@ngrx/store';
 import { takeLast, withLatestFrom, map } from 'rxjs/operators';
 
 import { AppState } from 'src/app/store/app.reducers';
-import * as AccountsActions from '../store/accounts.actions';
+import * as AccountsActions from '../../store/accounts.actions';
 import { pipe } from 'rxjs';
 
 @Component({
