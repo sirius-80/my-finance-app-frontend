@@ -1,6 +1,7 @@
 import * as TransactionsActions from './transactions.actions';
 
 export interface Transaction {
+  id: string;
   date: Date;
   account: string;
   amount: number;

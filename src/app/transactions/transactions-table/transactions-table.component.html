@@ -18,7 +18,12 @@
         <td>{{ transaction.account }}</td>
         <td>{{ transaction.amount }}</td>
         <td>{{ transaction.name }}</td>
-        <td>{{ transaction.category.name }}</td>
+        <td>
+          <select class="btn btn-secondary btn-sm" (change)="onSetCategory(transaction, $event.target.value)" id="category">
+            <option *ngFor="let category of ( categories | async )" [value]="category.id" [selected]="category.id == transaction.category.id">{{ category.name }}</option>
+          </select>
+
+        </td>
         <td>{{ transaction.description }}</td>
         <td>{{ transaction.counter_account }}</td>
         <td>{{ transaction.internal }}</td>
