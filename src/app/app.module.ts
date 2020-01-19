@@ -12,7 +12,9 @@ import { HomeComponent } from './home/home.component';
 import * as appReducers from './store/app.reducers';
 import { environment } from 'src/environments/environment';
 import { AccountsEffects } from './accounts-rx/store/accounts.effects';
+import { TransactionsEffects } from './transactions/store/transactions.effects';
 import { AccountsRxModule } from './accounts-rx/accounts-rx.module';
+import { TransactionsModule } from './transactions/transactions.module';
 
 @NgModule({
   declarations: [
@@ -24,9 +26,10 @@ import { AccountsRxModule } from './accounts-rx/accounts-rx.module';
     FormsModule,
     HttpClientModule,
     AccountsRxModule,
+    TransactionsModule,
     AppRoutingModule,
     StoreModule.forRoot(appReducers.reducers),
-    EffectsModule.forRoot([AccountsEffects]),
+    EffectsModule.forRoot([AccountsEffects, TransactionsEffects]),
     !environment.production ? StoreDevtoolsModule.instrument() : [],
   ],
   providers: [],
