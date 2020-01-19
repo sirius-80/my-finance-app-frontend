@@ -9,33 +9,21 @@ import { HttpClientModule } from '@angular/common/http';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { HomeComponent } from './home/home.component';
-import { AccountsComponent } from './accounts/accounts.component';
-import { HistoryChartsComponent } from './accounts/history-charts/history-charts.component';
-import { HistoryChartsRxComponent } from './accounts-rx/history-charts-rx/history-charts-rx.component';
-import { CategoryPieChartComponent } from './accounts/category-pie-chart/category-pie-chart.component';
-import { AccountsRxComponent } from './accounts-rx/accounts-rx.component';
 import * as appReducers from './store/app.reducers';
 import { environment } from 'src/environments/environment';
 import { AccountsEffects } from './accounts-rx/store/accounts.effects';
-import { CategoryBarChartComponent } from './accounts-rx/category-bar-chart/category-bar-chart.component';
-import { CategoryHierarchyChartComponent } from './accounts-rx/category-hierarchy-chart/category-hierarchy-chart.component';
+import { AccountsRxModule } from './accounts-rx/accounts-rx.module';
 
 @NgModule({
   declarations: [
     AppComponent,
-    AccountsComponent,
     HomeComponent,
-    HistoryChartsComponent,
-    HistoryChartsRxComponent,
-    CategoryPieChartComponent,
-    AccountsRxComponent,
-    CategoryBarChartComponent,
-    CategoryHierarchyChartComponent,
   ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpClientModule,
+    AccountsRxModule,
     AppRoutingModule,
     StoreModule.forRoot(appReducers.reducers),
     EffectsModule.forRoot([AccountsEffects]),
