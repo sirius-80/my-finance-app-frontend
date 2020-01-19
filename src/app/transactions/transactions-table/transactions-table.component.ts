@@ -17,7 +17,7 @@ export class TransactionsTableComponent implements OnInit {
 
   ngOnInit() {
     this.transactions = this.store.select(state => state.transactions.transactions);
-    this.categories = this.store.select(state => state.accounts.categories);
+    this.categories = this.store.select(state => state.transactions.categories);
   }
 
   onSetCategory(transaction: Transaction, categoryId: string) {

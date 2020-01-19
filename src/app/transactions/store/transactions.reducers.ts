@@ -1,4 +1,5 @@
 import * as TransactionsActions from './transactions.actions';
+import { Category } from 'src/app/accounts-rx/accounts.model';
 
 export interface Transaction {
   id: string;
@@ -14,10 +15,12 @@ export interface Transaction {
 
 export interface State {
   transactions: Transaction[];
+  categories: Category[];
 }
 
 const initialState: State = {
   transactions: [],
+  categories: [],
 };
 
 
@@ -29,6 +32,11 @@ export function transactionsReducer(state = initialState, action: TransactionsAc
       return {
         ...state,
         transactions: action.payload,
+      };
+    case TransactionsActions.SET_CATEGORIES:
+      return {
+        ...state,
+        categories: action.payload,
       };
     default:
       return state;

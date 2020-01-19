@@ -7,6 +7,7 @@ import { switchMap, map } from 'rxjs/operators';
 import * as TransactionActions from './transactions.actions';
 import { Transaction } from './transactions.reducers';
 import { AppState } from 'src/app/store/app.reducers';
+import { Category } from 'src/app/accounts-rx/accounts.model';
 
 
 @Injectable()
@@ -15,13 +16,24 @@ export class TransactionsEffects {
   transactionsFetch = this.actions$.pipe(
     ofType(TransactionActions.LOAD_TRANSACTIONS),
     switchMap((action: TransactionActions.LoadTransactions) => {
-      console.log('handling', action);
       const url = 'http://localhost:5002/transactions';
       const params = new HttpParams().set('start', '' + action.payload.start.getTime()).append('end', '' + action.payload.end.getTime());
       return this.httpClient.get<Transaction[]>(url, {params});
     }),
     map((transactions: Transaction[]) => {
       return new TransactionActions.SetTransactions(transactions);
+    })
+  );
+
+  @Effect()
+  categoriesFetch = this.actions$.pipe(
+    ofType(TransactionActions.LOAD_CATEGORIES),
+    switchMap((action: TransactionActions.LoadCategories) => {
+      const url = 'http://localhost:5002/categories';
+      return this.httpClient.get<Category[]>(url);
+    }),
+    map((categories: Category[]) => {
+      return new TransactionActions.SetCategories(categories);
     })
   );
 
