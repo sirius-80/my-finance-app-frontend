@@ -15,6 +15,7 @@ import { AccountsEffects } from './accounts-rx/store/accounts.effects';
 import { TransactionsEffects } from './transactions/store/transactions.effects';
 import { AccountsRxModule } from './accounts-rx/accounts-rx.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
@@ -31,6 +32,7 @@ import { TransactionsModule } from './transactions/transactions.module';
     StoreModule.forRoot(appReducers.reducers),
     EffectsModule.forRoot([AccountsEffects, TransactionsEffects]),
     !environment.production ? StoreDevtoolsModule.instrument() : [],
+    BrowserAnimationsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
