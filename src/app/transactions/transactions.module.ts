@@ -1,10 +1,11 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatFormFieldModule, MatTableModule, MatPaginatorModule, MatSortModule, MatInputModule } from '@angular/material';
+import { MatFormFieldModule, MatTableModule, MatPaginatorModule, MatSortModule, MatInputModule, MatSelectModule, MatButtonModule } from '@angular/material';
 
 import { TransactionsRoutingModule } from './transactions-routing.module';
 import { TransactionsComponent } from './transactions.component';
 import { TransactionsTableComponent } from './transactions-table/transactions-table.component';
+import { FormsModule } from '@angular/forms';
 
 
 @NgModule({
@@ -20,6 +21,9 @@ import { TransactionsTableComponent } from './transactions-table/transactions-ta
     MatPaginatorModule,
     MatInputModule,
     MatSortModule,
+    MatSelectModule,
+    MatButtonModule,
+    FormsModule,
   ],
 })
 export class TransactionsModule {}

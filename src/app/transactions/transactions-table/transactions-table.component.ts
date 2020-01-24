@@ -15,7 +15,8 @@ export interface TableTransaction {
   account: string;
   amount: number;
   name: string;
-  category: string;
+  category: Category;
+  category_name: string;
   description: string;
   counter_account: string;
   internal: boolean;
@@ -51,7 +52,8 @@ export class TransactionsTableComponent implements OnInit {
             account: t.account,
             amount: t.amount,
             name: t.name,
-            category: t.category.name,
+            category: t.category,
+            category_name: t.category.name,
             description: t.description,
             counter_account: t.counter_account,
             internal: t.internal

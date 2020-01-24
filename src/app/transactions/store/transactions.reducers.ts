@@ -7,7 +7,7 @@ export interface Transaction {
   account: string;
   amount: number;
   name: string;
-  category: string;
+  category: Category;
   description: string;
   counter_account: string;
   internal: boolean;

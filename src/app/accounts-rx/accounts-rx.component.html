@@ -1,14 +1,16 @@
 <div class="row">
   <div class="col-sm-12">
-    <button class="btn btn-primary" (click)="onLoadData()">Load transactions</button>
-    <label for="category">Category: </label>
-    <select class="btn btn-success" (change)="onCategory($event.target.value)" id="category">
-      <option *ngFor="let category of ( categories | async )" [value]="category.id">{{ category.name }}</option>
-    </select>
-    <select class="btn btn-info" (change)="onGranularityChange($event.target.value)" id="granularity">
-      <option value="monthly">Monthly</option>
-      <option value="yearly">Yearly</option>
-    </select>
+    <button mat-raised-button color="primary" (click)="onLoadData()">Load transactions</button>
+    <mat-form-field>
+      <mat-label>Select a category</mat-label>
+      <mat-select (selectionChange)="onCategory($event.value)" [ngModel]="0">
+        <mat-option *ngFor="let category of ( categories | async )" [value]="category.id">{{ category.name }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-radio-group [ngModel]="'monthly'" aria-label="Select granularity" (change)="onGranularityChange($event.value)">
+      <mat-radio-button value="monthly">Monhtly</mat-radio-button>
+      <mat-radio-button value="yearly">Yearly</mat-radio-button>
+    </mat-radio-group>
     <hr>
     <p>Showing from {{ (period|async).start | date:'longDate' }} until {{ (period|async).end | date:'longDate' }}</p>
   </div>

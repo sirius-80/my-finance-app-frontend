@@ -7,6 +7,8 @@ import { HistoryChartsRxComponent } from './history-charts-rx/history-charts-rx.
 import { CategoryBarChartComponent } from './category/category-bar-chart/category-bar-chart.component';
 import {CategoryHierarchyChartComponent } from './category/category-hierarchy-chart/category-hierarchy-chart.component';
 import { CategoryComponent } from './category/category.component';
+import { MatButtonModule, MatSelectModule, MatRadioModule } from '@angular/material';
+import { FormsModule } from '@angular/forms';
 
 
 @NgModule({
@@ -20,6 +22,10 @@ import { CategoryComponent } from './category/category.component';
   imports: [
     CommonModule,
     AccountsRxRoutingModule,
+    MatButtonModule,
+    MatSelectModule,
+    FormsModule,
+    MatRadioModule,
   ],
 })
 export class AccountsRxModule {}
