@@ -19,6 +19,6 @@ export class TransactionsComponent implements OnInit {
 
   onLoadTransactions() {
     this.store.dispatch(new TransactionsActions.LoadCategories());
-    this.store.dispatch(new TransactionsActions.LoadTransactions({start: new Date('2020-01-01'), end: new Date()}));
+    this.store.dispatch(new TransactionsActions.LoadTransactions({start: new Date('1970-01-01'), end: new Date()}));
   }
 }

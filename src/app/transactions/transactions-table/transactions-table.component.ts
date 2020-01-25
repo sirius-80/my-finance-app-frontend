@@ -55,7 +55,7 @@ export class TransactionsTableComponent implements OnInit {
             amount: t.amount,
             name: t.name,
             category: t.category,
-            category_name: t.category.name,
+            category_name: t.category && t.category.name || null,
             description: t.description,
             counter_account: t.counter_account,
             internal: t.internal
