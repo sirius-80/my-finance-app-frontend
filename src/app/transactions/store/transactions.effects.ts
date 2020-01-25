@@ -37,6 +37,18 @@ export class TransactionsEffects {
     })
   );
 
+  @Effect()
+  transactionCategoryUpdate = this.actions$.pipe(
+    ofType(TransactionActions.UPDATE_TRANSACTION_CATEGORY),
+    switchMap((action: TransactionActions.UpdateTransactionCategory) => {
+      const url = 'http://localhost:5002/transactions/' + action.payload.transactionId + '/set_category';
+      return this.httpClient.put<Transaction>(url, {categoryId: action.payload.categoryId});
+    }),
+    map((transaction: Transaction) => {
+      return new TransactionActions.UpdateStateTransactionCategory(transaction);
+    })
+  );
+
 
   constructor(private actions$: Actions,
               private httpClient: HttpClient,

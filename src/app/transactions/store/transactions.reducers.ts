@@ -38,6 +38,20 @@ export function transactionsReducer(state = initialState, action: TransactionsAc
         ...state,
         categories: action.payload,
       };
+    case TransactionsActions.UPDATE_STATE_TRANSACTION_CATEGORY:
+      let index = -1;
+      for (let i = 0; i < state.transactions.length; i++) {
+        if (state.transactions[i].id === action.payload.id) {
+          index = i;
+          break;
+        }
+      }
+      let updatedTransactions = [...state.transactions];
+      updatedTransactions[index] = action.payload;
+      return {
+        ...state,
+        transactions: updatedTransactions,
+      }
     default:
       return state;
   }

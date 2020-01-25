@@ -5,9 +5,9 @@ import {MatSort} from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material/table';
 
 import { AppState } from 'src/app/store/app.reducers';
-import { Transaction } from '../store/transactions.reducers';
 import { Observable } from 'rxjs';
 import { Category } from 'src/app/accounts-rx/accounts.model';
+import * as TransactionsActions from '../store/transactions.actions';
 
 export interface TableTransaction {
   id: string;
@@ -45,6 +45,8 @@ export class TransactionsTableComponent implements OnInit {
     this.store.select(state => state.transactions.transactions).subscribe(
       transactions => {
         const tableTransations = [];
+        console.log(transactions);
+        
         for (const t of transactions) {
           tableTransations.push({
             id: t.id,
@@ -76,7 +78,8 @@ export class TransactionsTableComponent implements OnInit {
     }
   }
 
-  onSetCategory(transaction: Transaction, categoryId: string) {
-    console.log('Setting category of transaction ', transaction, ' to ', categoryId);
+  onSetCategory(transactionId: string, categoryId: string) {
+    console.log('Setting category of transaction ', transactionId, ' to ', categoryId);
+    this.store.dispatch(new TransactionsActions.UpdateTransactionCategory({transactionId, categoryId}));
   }
 }
