@@ -5,9 +5,8 @@ import { Effect, Actions, ofType } from '@ngrx/effects';
 import { switchMap, map } from 'rxjs/operators';
 
 import * as TransactionActions from './transactions.actions';
-import { Transaction } from './transactions.reducers';
+import { Category, Transaction } from './transactions.reducers';
 import { AppState } from 'src/app/store/app.reducers';
-import { Category } from 'src/app/accounts-rx/accounts.model';
 
 
 @Injectable()

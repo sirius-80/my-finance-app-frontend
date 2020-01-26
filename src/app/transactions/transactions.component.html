@@ -1,2 +1,9 @@
 <button mat-raised-button color="primary" (click)="onLoadTransactions()">Load transactions</button>
+<mat-form-field>
+    <mat-label>Select a category</mat-label>
+    <mat-select (selectionChange)="onCategory($event.value)" [ngModel]="0">
+      <mat-option *ngFor="let category of ( categories | async )" [value]="category.id">{{ category.name }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+<app-category-transactions></app-category-transactions>
 <app-transactions-table></app-transactions-table>

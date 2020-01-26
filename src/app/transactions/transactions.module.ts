@@ -6,12 +6,14 @@ import { TransactionsRoutingModule } from './transactions-routing.module';
 import { TransactionsComponent } from './transactions.component';
 import { TransactionsTableComponent } from './transactions-table/transactions-table.component';
 import { FormsModule } from '@angular/forms';
+import { CategoryTransactionsComponent } from './category-transactions/category-transactions.component';
 
 
 @NgModule({
   declarations: [
     TransactionsComponent,
     TransactionsTableComponent,
+    CategoryTransactionsComponent,
   ],
   imports: [
     CommonModule,

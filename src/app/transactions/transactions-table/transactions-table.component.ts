@@ -6,7 +6,7 @@ import {MatTableDataSource} from '@angular/material/table';
 
 import { AppState } from 'src/app/store/app.reducers';
 import { Observable } from 'rxjs';
-import { Category } from 'src/app/accounts-rx/accounts.model';
+import { Category } from '../store/transactions.reducers';
 import * as TransactionsActions from '../store/transactions.actions';
 
 export interface TableTransaction {
@@ -42,10 +42,10 @@ export class TransactionsTableComponent implements OnInit {
   ngOnInit() {
     this.categories = this.store.select(state => state.transactions.categories);
     // Assign the data to the data source for the table to render
-    this.store.select(state => state.transactions.transactions).subscribe(
+    this.store.select(state => state.transactions.selectedTransactions).subscribe(
       transactions => {
         const tableTransations = [];
-        console.log(transactions);
+        // console.log(transactions);
         
         for (const t of transactions) {
           tableTransations.push({
@@ -61,7 +61,7 @@ export class TransactionsTableComponent implements OnInit {
             internal: t.internal
           });
         }
-        console.log('Updating transactions table');
+        // console.log('Updating transactions table');
         this.dataSource = new MatTableDataSource(tableTransations);
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
