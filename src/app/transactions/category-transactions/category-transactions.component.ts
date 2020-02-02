@@ -7,6 +7,7 @@ import { Category } from 'src/app/accounts-rx/accounts.model';
 import { Store } from '@ngrx/store';
 import { AppState } from 'src/app/store/app.reducers';
 import * as TransactionsActions from '../store/transactions.actions';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-category-transactions',
@@ -16,6 +17,7 @@ import * as TransactionsActions from '../store/transactions.actions';
 export class CategoryTransactionsComponent implements OnInit, OnDestroy {
   private chart: am4charts.XYChart;
   private category: Category;
+  private subscription: Subscription;
 
   constructor(private zone: NgZone,
               private store: Store<AppState>) { }
@@ -65,7 +67,7 @@ export class CategoryTransactionsComponent implements OnInit, OnDestroy {
   }
 
   private populateChart() {
-    this.store.select(state => state.transactions.barChartData).subscribe(
+    this.subscription = this.store.select(state => state.transactions.barChartData).subscribe(
       (currentCategoryData) => {
         // console.log('Update category bar chart', currentCategoryData);
         this.chart.data = currentCategoryData;
@@ -73,6 +75,10 @@ export class CategoryTransactionsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
+    }
     this.zone.runOutsideAngular(() => {
       if (this.chart) {
         this.chart.dispose();

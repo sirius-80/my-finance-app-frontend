@@ -8,18 +8,11 @@ export interface Category {
 }
 
 export function categoryInheritsFrom(child: Category, other: Category) {
-  if (child.id == other.id) {
+  if (other && child.id == other.id) {
     return true;
   } else if (child.parent) {
-    if (child.name.includes('Inkomsten')) {
-      // console.log('Checking parent of child', child);
-    }
     return categoryInheritsFrom(child.parent, other);
   } else {
-    // console.log('unmatching categories', child.id, other.id);
-    // console.log(child);
-    // console.log(other);
-    
     return false;
   }
 };
@@ -40,7 +33,7 @@ export interface State {
   transactions: Transaction[];
   categories: Category[];
   selectedTransactions: Transaction[];
-  barChartData: {date: Date, amount: number}[];
+  barChartData: { date: Date, amount: number }[];
   selectedPeriod: { start: Date, end: Date };
   selectedCategory: Category;
 }
@@ -50,37 +43,39 @@ const initialState: State = {
   categories: [],
   selectedTransactions: [],
   barChartData: [],
-  selectedPeriod: {start: new Date(1970, 1), end: new Date()},
+  selectedPeriod: { start: new Date(1970, 1), end: new Date() },
   selectedCategory: null,
 };
 
-function determineSelectedTransactions(state: State, categoryId: string, period: {start: Date, end: Date}) {
+function determineSelectedTransactions(state: State, categoryId: string, period: { start: Date, end: Date }) {
   let selected = null;
-      for (const cat of state.categories) {
-        if (cat.id === categoryId) {
-          selected = cat;
-          break;
+  for (const cat of state.categories) {
+    if (cat.id === categoryId) {
+      selected = cat;
+      break;
+    }
+  }
+  let selectedTransactions = [];
+  if (selected) {
+    for (const t of state.transactions) {
+      if ((t.category && categoryInheritsFrom(t.category, selected))
+        || (!t.category && selected.id === 0)) {
+        t.date = new Date(t.date);
+        if (t.date >= period.start && t.date <= period.end) {
+          selectedTransactions.push(t);
         }
       }
-      let selectedTransactions = [];
-      for (const t of state.transactions) {
-        if ((t.category && categoryInheritsFrom(t.category, selected))
-          || (!t.category && selected.id === 0)) {
-            t.date = new Date(t.date);
-            if (t.date >= period.start && t.date <= period.end) {
-              selectedTransactions.push(t);
-            }
-        }
-      }
-      selectedTransactions.sort((a: Transaction, b: Transaction) => {
-        return a.date.getTime() - b.date.getTime();
-      });
-      return {
-        ...state,
-        selectedTransactions,
-        selectedCategory: selected,
-        selectedPeriod: period,
-      };
+    }
+    selectedTransactions.sort((a: Transaction, b: Transaction) => {
+      return a.date.getTime() - b.date.getTime();
+    });
+  }
+  return {
+    ...state,
+    selectedTransactions,
+    selectedCategory: selected,
+    selectedPeriod: period,
+  };
 }
 
 function getBarchartData(selectedTransactions: Transaction[]) {
@@ -92,7 +87,7 @@ function getBarchartData(selectedTransactions: Transaction[]) {
       sum += +t.amount;
     } else {
       if (month !== null) {
-        barChartData.push({date: month, amount: sum});
+        barChartData.push({ date: month, amount: sum });
       }
       sum = +t.amount;
       month = new Date(t.date.getFullYear(), t.date.getMonth());
@@ -116,12 +111,12 @@ export function transactionsReducer(state = initialState, action: TransactionsAc
         categories: action.payload,
       };
     case TransactionsActions.SELECT_CATEGORY:
-      const newState = determineSelectedTransactions(state, action.payload, {start: new Date(1970, 1), end: new Date()});
+      const newState = determineSelectedTransactions(state, action.payload, { start: new Date(1970, 1), end: new Date() });
       return {
         ...newState,
         barChartData: getBarchartData(newState.selectedTransactions),
       }
-        
+
     case TransactionsActions.UPDATE_STATE_TRANSACTION_CATEGORY:
       let index = -1;
       for (let i = 0; i < state.transactions.length; i++) {

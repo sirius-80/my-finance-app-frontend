@@ -8,6 +8,7 @@ import am4lang_nl_NL from '@amcharts/amcharts4/lang/nl_NL';
 import { AppState } from '../../../store/app.reducers';
 import { Category } from '../../accounts.model';
 import * as AccountsActions from '../../store/accounts.actions';
+import { Subscription } from 'rxjs';
 
 
 @Component({
@@ -18,9 +19,10 @@ import * as AccountsActions from '../../store/accounts.actions';
 export class CategoryBarChartComponent implements OnInit, AfterViewInit, OnDestroy {
   private chart: am4charts.XYChart;
   private category: Category;
+  private subscription: Subscription;
 
   constructor(private zone: NgZone,
-              private store: Store<AppState>) { }
+    private store: Store<AppState>) { }
 
   ngOnInit() {
     am4core.useTheme(am4themes_animated);
@@ -57,7 +59,7 @@ export class CategoryBarChartComponent implements OnInit, AfterViewInit, OnDestr
           const start = axis.getSeriesDataItem(chart.series.getIndex(0), axis.toAxisPosition(range.start)).dateX;
           const end = axis.getSeriesDataItem(chart.series.getIndex(0), axis.toAxisPosition(range.end)).dateX;
           console.log('Selected from ', start, ' to ', end);
-          this.store.dispatch(new AccountsActions.SelectPeriod({start, end}));
+          this.store.dispatch(new AccountsActions.SelectPeriod({ start, end }));
         } else {
           this.store.dispatch(new AccountsActions.SelectPeriod(null));
         }
@@ -87,7 +89,7 @@ export class CategoryBarChartComponent implements OnInit, AfterViewInit, OnDestr
   }
 
   private populateChart() {
-    this.store.select(state => state.accounts.currentCategoryData).subscribe(
+    this.subscription = this.store.select(state => state.accounts.currentCategoryData).subscribe(
       (currentCategoryData) => {
         console.log('Update category bar chart', currentCategoryData);
         this.chart.data = currentCategoryData;
@@ -95,6 +97,10 @@ export class CategoryBarChartComponent implements OnInit, AfterViewInit, OnDestr
   }
 
   ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
+    }
     this.zone.runOutsideAngular(() => {
       if (this.chart) {
         this.chart.dispose();
