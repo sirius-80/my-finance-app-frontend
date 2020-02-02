@@ -1,0 +1,3 @@
+<input #csvInput id="file-input" hidden="true" type="file" onclick="this.value=null" (change)="csvInputChange($event)" accept=".csv"/>
+<button mat-flat-button color="primary" (click)="csvInput.click()">Choose Rabobank CSV file</button>
+<label *ngIf="filename != null" for="file-input">Uploading {{ filename }}...</label>

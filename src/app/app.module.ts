@@ -16,6 +16,7 @@ import { TransactionsEffects } from './transactions/store/transactions.effects';
 import { AccountsRxModule } from './accounts-rx/accounts-rx.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { UploadModule } from './upload/upload.module';
 
 @NgModule({
   declarations: [
@@ -28,6 +29,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     HttpClientModule,
     AccountsRxModule,
     TransactionsModule,
+    UploadModule,
     AppRoutingModule,
     StoreModule.forRoot(appReducers.reducers),
     EffectsModule.forRoot([AccountsEffects, TransactionsEffects]),
