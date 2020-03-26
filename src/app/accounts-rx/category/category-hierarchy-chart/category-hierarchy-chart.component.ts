@@ -1,4 +1,4 @@
-import { Component, OnInit, NgZone, AfterViewInit } from '@angular/core';
+import { Component, OnInit, NgZone, AfterViewInit, OnDestroy } from '@angular/core';
 import * as am4core from '@amcharts/amcharts4/core';
 import * as am4charts from '@amcharts/amcharts4/charts';
 import * as am4plugins_sunburst from '@amcharts/amcharts4/plugins/sunburst';
@@ -15,8 +15,9 @@ import { pipe } from 'rxjs';
   templateUrl: './category-hierarchy-chart.component.html',
   styleUrls: ['./category-hierarchy-chart.component.css']
 })
-export class CategoryHierarchyChartComponent implements OnInit, AfterViewInit {
+export class CategoryHierarchyChartComponent implements OnInit, AfterViewInit, OnDestroy {
   updateTimer = null;
+  chart = null;
 
   constructor(private ngZone: NgZone,
               private store: Store<AppState>) {}
@@ -31,6 +32,7 @@ export class CategoryHierarchyChartComponent implements OnInit, AfterViewInit {
       'category-hierarchy-chart-div',
       am4plugins_sunburst.Sunburst
     );
+    this.chart = chart;
     chart.padding(0, 0, 0, 0);
     chart.radius = am4core.percent(98);
 
@@ -130,5 +132,18 @@ export class CategoryHierarchyChartComponent implements OnInit, AfterViewInit {
 
     //     chart.data = data;
     //   });
+  }
+
+  ngOnDestroy() {
+    // if (this.subscription) {
+    //   this.subscription.unsubscribe();
+    //   this.subscription = null;
+    // }
+    this.ngZone.runOutsideAngular(() => {
+      if (this.chart) {
+        this.chart.dispose();
+        this.chart = null;
+      }
+    });
   }
 }
