@@ -1,9 +1,9 @@
 import { Account } from '../account/account';
 import { Category } from '../category/category';
-
+import * as domainActions from './domain.actions';
 export interface State  {
   accounts: Account[];
-  categories: Category[]
+  categories: Category[];
 }
 
 const initialState: State = {
@@ -11,94 +11,47 @@ const initialState: State = {
   categories: [],
 };
 
-export function accountsReducer(state = initialState, action: accountsActions.accountsActions) {
+export function domainReducer(state = initialState, action: domainActions.domainActions) {
+  console.log('domainReducer: reducing action', action);
   switch (action.type) {
-    case accountsActions.SET_CATEGORIES:
-      return {
-        ...state,
-        categories: action.payload
-      };
-    case accountsActions.SELECT_CATEGORY:
-      let selected = null;
-      for (const cat of state.categories) {
-        if (cat.id === action.payload) {
-          selected = cat;
-          break;
+    case domainActions.SET_CATEGORIES:
+      const categories = action.payload;
+      for (const cat of categories) {
+        if (cat.parent) {
+          for (const parent of categories) {
+            if (cat.parent.toString() === parent.id) {
+              cat.parent = parent;
+            }
+          }
+        } else {
+          console.log('Leaving root-category unchanged', cat);
         }
       }
       return {
         ...state,
-        selectedCategory: selected
+        categories
       };
-    case accountsActions.SET_GRANULARITY:
-      let categoryData = state.categoryMonthlyData;
-      let balanceData = state.monthlyData;
-      if (action.payload === 'yearly') {
-        categoryData = state.categoryYearlyData;
-        balanceData = state.yearlyData;
+    case domainActions.SET_ACCOUNTS:
+      const accounts = action.payload;
+      for (const account of accounts) {
+        console.log('Loading account', account.name);
+        for (const transaction of account.transactions) {
+          transaction.account = account;
+          if (transaction.category) {
+            for (const category of state.categories) {
+              // Note: transaction.category may be either a string (before it's resolved) or a Category (after resolving)
+              // TODO #4: Create intermediate transaction class that explicitly has categoryId as a string
+              if (transaction.category.toString() === category.id) {
+                transaction.category = category;
+              }
+            }
+          }
+        }
+        console.log('Account loaded');
       }
       return {
         ...state,
-        granularity: action.payload,
-        currentCategoryData: categoryData,
-        currentData: balanceData,
-      };
-    case accountsActions.SET_PERIOD:
-      return {
-        ...state,
-        period: action.payload,
-      };
-    case accountsActions.SET_MONTHLY_COMBINED_DATA:
-      let currentData = action.payload;
-      if (state.granularity === 'yearly') {
-        currentData = state.yearlyData;
-      }
-      return {
-        ...state,
-        monthlyData: action.payload,
-        currentData,
-      };
-      break;
-    case accountsActions.SET_YEARLY_COMBINED_DATA:
-      let currentData2 = action.payload;
-      if (state.granularity === 'monthly') {
-        currentData2 = state.monthlyData;
-      }
-      return {
-        ...state,
-        yearlyData: action.payload,
-        currentData: currentData2,
-      };
-      break;
-    case accountsActions.SET_CATEGORY_DATA:
-      return {
-        ...state,
-        categoryData: action.payload,
-      };
-    case accountsActions.SET_MONTHLY_CATEGORY_DATA:
-      let currentCategoryData = action.payload;
-      if (state.granularity === 'yearly') {
-        currentCategoryData = state.categoryYearlyData;
-      }
-      return {
-        ...state,
-        categoryMonthlyData: action.payload,
-        currentCategoryData,
-      };
-    case accountsActions.SET_YEARLY_CATEGORY_DATA:
-      let currentCategoryData2 = action.payload;
-      if (state.granularity === 'monthly') {
-        currentCategoryData2 = state.categoryMonthlyData;
-      }
-      return {
-        ...state,
-        categoryYearlyData: action.payload,
-        currentCategoryData: currentCategoryData2,
-      };
-    case accountsActions.SELECT_PERIOD:
-      return {
-        ...state,
-        selectedPeriod: action.payload,
+        accounts
       };
     default:
       return state;

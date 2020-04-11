@@ -4,12 +4,13 @@ import { v4 as uuid4 } from 'uuid';
 export class Category extends Entity {
     private children: Category[] = [];
 
-    constructor(categoryId: string, public name: string, public parent: Category = null) {
-        super(categoryId);
+    constructor(public id: string, public name: string, public parent: Category = null) {
+        super(id);
     }
 
+
     getQualifiedName(): string {
-        var qname: string;
+        let qname: string;
         if (this.parent) {
             qname = this.parent.getQualifiedName() + '::';
         } else {
@@ -20,7 +21,6 @@ export class Category extends Entity {
 
     /**
      * Returns True if given other_category is an ancestor of this category. Returns False otherwise.
-     * @param otherCategory 
      */
     inheritsFrom(otherCategory: Category): boolean {
         if (this.parent) {
@@ -59,16 +59,16 @@ export class CategoryFactory {
     createCategory(name: string, parent: Category = null): Category {
         return new Category(uuid4(), name, parent && this.repository.getCategoryByQualifiedName(parent.getQualifiedName()) || null);
     }
-    
+
     createCategoryFromQualifiedName(qualifiedName: string): Category {
-        var category = null;
-        var nextParent = null;
-        for (const name of qualifiedName.split("::")) {
+        let category = null;
+        let nextParent = null;
+        for (const name of qualifiedName.split('::')) {
             const tmpCategory = this.createCategory(name, nextParent);
             category = this.repository.getCategoryByQualifiedName(tmpCategory.getQualifiedName()) || tmpCategory;
             category.parent = nextParent;
             nextParent = category;
         }
-        return category
+        return category;
     }
 }

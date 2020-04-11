@@ -13,15 +13,19 @@ import * as appReducers from './store/app.reducers';
 import { environment } from 'src/environments/environment';
 import { AccountsEffects } from './accounts-rx/store/accounts.effects';
 import { TransactionsEffects } from './transactions/store/transactions.effects';
+import { DomainEffects } from './domain/store/domain.effects';
 import { AccountsRxModule } from './accounts-rx/accounts-rx.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { UploadModule } from './upload/upload.module';
+import { DomainModule } from './domain/domain.module';
+import { DomainComponent } from './domain/domain.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     HomeComponent,
+    DomainComponent,
   ],
   imports: [
     BrowserModule,
@@ -32,9 +36,10 @@ import { UploadModule } from './upload/upload.module';
     UploadModule,
     AppRoutingModule,
     StoreModule.forRoot(appReducers.reducers),
-    EffectsModule.forRoot([AccountsEffects, TransactionsEffects]),
+    EffectsModule.forRoot([AccountsEffects, TransactionsEffects, DomainEffects]),
     !environment.production ? StoreDevtoolsModule.instrument() : [],
     BrowserAnimationsModule,
+    DomainModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -1,4 +1,4 @@
-import { Category } from 'src/app/accounts-rx/accounts.model'
+import { Category } from '../category/category';
 import { Entity, DomainEvent } from '../entity';
 import { v4 as uuid4 } from 'uuid';
 
@@ -35,19 +35,18 @@ export class TransactionCreatedEvent implements DomainEvent {
  * Represents a transaction on a owned account.
  */
 export class Transaction extends Entity {
-    public internal = false;
-    public category: Category = null;
-
-    constructor(public transactionId: string,
-        public account: Account,
-        public serial: number,
-        public date: Date,
-        public amount: number,
-        public name: string,
-        public description: string,
-        public counterAccount: string,
-        public balanceAfter: number) {
-        super(transactionId);
+    constructor(public id: string,
+                public account: Account,
+                public serial: number,
+                public date: Date,
+                public amount: number,
+                public name: string,
+                public description: string,
+                public counterAccount: string,
+                public internal: boolean,
+                public category: Category,
+                public balanceAfter: number) {
+        super(id);
     }
 
     /**
@@ -61,7 +60,6 @@ export class Transaction extends Entity {
 
     /**
      * Marks this transaction as 'internal' if internal is True, or 'not internal' otherwise.
-     * @param internal 
      */
     setInternal(internal: boolean): void {
         this.registerDomainEvent(new TransactionSetInternalEvent(this, this.internal, internal));
@@ -70,9 +68,8 @@ export class Transaction extends Entity {
 }
 
 export class Account extends Entity {
-    private transactions: Transaction[] = [];
-    constructor(private accountId: string, private name: string, private bank: string) {
-        super(accountId);
+    constructor(public id: string, public name: string, public bank: string, public transactions: Transaction[]) {
+        super(id);
      }
 
     /**
@@ -93,7 +90,6 @@ export class Account extends Entity {
     /**
      * Returns the last transaction at given date, or the last transaction that occurred before this date, if
      * no transaction occurred on this specific date.
-     * @param date 
      */
     private getLastTransactionAtOrBefore(date: Date): Transaction {
         return this.transactions.reduce((last, t) => t.date <= date && t || last);
@@ -101,7 +97,6 @@ export class Account extends Entity {
 
     /**
      * Returns the account balance at given date, or 0 if given date predates the first transaction on this account.
-     * @param date 
      */
     getBalanceAt(date: Date): number {
         const transaction = this.getLastTransactionAtOrBefore(date);
@@ -114,7 +109,7 @@ export class Account extends Entity {
 
     /**
      * Returns the list of transactions of given category that falls after given start_date (inclusive) and before
-        given end_date(exclusive), of given category (or any category if provided category is null or undefined)
+     * given end_date(exclusive), of given category (or any category if provided category is null or undefined)
      * @param start Optional start-date to filter on
      * @param end Optional end-date to filter on
      * @param category Optional category to filter on
@@ -127,7 +122,6 @@ export class Account extends Entity {
 
     /**
      * Adds given transaction to this account. Note that the caller is responsible that transactions are only added once to an account.
-     * @param transaction 
      */
     addTransaction(transaction: Transaction): void {
         this.transactions.push(transaction);
@@ -149,20 +143,19 @@ export class Account extends Entity {
 
     /**
      * Returns all transactions in given account that exactly match given set of attributes.
-     * @param date 
-     * @param serial 
-     * @param amount 
-     * @param name 
-     * @param counterAccount 
-     * @param description 
      */
-    findTransactionsByAttributes(date: Date, serial: number, amount: number, name: string, counterAccount: string, description: string): Transaction[] {
-        return this.transactions.filter(t => t.date == date 
-            && t.serial == serial
-            && t.amount == amount
-            && t.name == name
-            && t.counterAccount == counterAccount
-            && t.description == description);    
+    findTransactionsByAttributes(date: Date,
+                                 serial: number,
+                                 amount: number,
+                                 name: string,
+                                 counterAccount: string,
+                                 description: string): Transaction[] {
+        return this.transactions.filter(t => t.date === date
+            && t.serial === serial
+            && t.amount === amount
+            && t.name === name
+            && t.counterAccount === counterAccount
+            && t.description === description);
     }
 }
 
@@ -188,17 +181,28 @@ export interface AccountRepository {
  * instances using an AccountRepository.
  */
 export class AccountFactory {
-    static createAccount(name: string, bank: string): Account {
-        const account = new Account(uuid4(), name, bank);
+    static createAccount(name: string, bank: string, transactions: Transaction[]): Account {
+        const account = new Account(uuid4(), name, bank, transactions);
         account.registerDomainEvent(new AccountCreatedEvent(account));
         return account;
     }
-    
-    
-    static createTransaction(account: Account, date: Date, amount: number, name: string, description: string, serial: number, counter_account: string, balance_after: number) {
-        const transaction = new Transaction(uuid4(), account, serial, date, amount, name, description, counter_account, balance_after);
+
+
+    static createTransaction(account: Account,
+                             date: Date,
+                             amount: number,
+                             name: string,
+                             description: string,
+                             serial: number,
+                             counterAccount: string,
+                             internal: boolean,
+                             category: Category,
+                             balanceAfter: number) {
+        // TODO #2: Resolve Category here? Or let caller resolve it? (=current implementation)
+        const transaction = new Transaction(uuid4(), account, serial, date, amount, name, description, counterAccount,
+                                            internal, category, balanceAfter);
         transaction.registerDomainEvent(new TransactionCreatedEvent(transaction));
         return transaction;
     }
-    
+
 }

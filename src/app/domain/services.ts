@@ -9,7 +9,6 @@ export interface TransactionCategoryMapper {
     /**
      * Returns a (possibly empty) list of CategoryScore objects, representing the matching categories and their
      * respective scores for given transaction.
-     * @param transaction 
      */
     getCategoryScores(transaction: Transaction): {category: Category, score: number};
 }
@@ -18,7 +17,6 @@ export interface TransactionCategoryMapper {
 export interface InternalTransactionDetector {
     /**
      * Returns True if, and only if, given transaction is an internal transaction (i.e. between own accounts).
-     * @param transaction 
      */
     isInternalTransaction(transaction: Transaction): boolean;
 }

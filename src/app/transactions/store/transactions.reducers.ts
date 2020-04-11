@@ -97,7 +97,7 @@ function getBarchartData(selectedTransactions: Transaction[]) {
 }
 
 export function transactionsReducer(state = initialState, action: TransactionsActions.transactionsActions) {
-  console.log('Reducing action', action);
+  console.log('transactionsReducer: Reducing action', action);
 
   switch (action.type) {
     case TransactionsActions.SET_TRANSACTIONS:
