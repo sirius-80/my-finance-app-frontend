@@ -11,11 +11,13 @@ import { AppState } from 'src/app/store/app.reducers';
 
 @Injectable()
 export class TransactionsEffects {
+  private HOST = 'localhost';
+
   @Effect()
   transactionsFetch = this.actions$.pipe(
     ofType(TransactionActions.LOAD_TRANSACTIONS),
     switchMap((action: TransactionActions.LoadTransactions) => {
-      const url = 'http://localhost:5002/transactions';
+      const url = 'http://' + this.HOST + ':5002/transactions';
       const params = new HttpParams().set('start', '' + action.payload.start.getTime()).append('end', '' + action.payload.end.getTime());
       return this.httpClient.get<Transaction[]>(url, {params});
     }),
@@ -28,7 +30,7 @@ export class TransactionsEffects {
   categoriesFetch = this.actions$.pipe(
     ofType(TransactionActions.LOAD_CATEGORIES),
     switchMap((action: TransactionActions.LoadCategories) => {
-      const url = 'http://localhost:5002/categories';
+      const url = 'http://' + this.HOST + ':5002/categories';
       return this.httpClient.get<Category[]>(url);
     }),
     map((categories: Category[]) => {
@@ -40,7 +42,7 @@ export class TransactionsEffects {
   transactionCategoryUpdate = this.actions$.pipe(
     ofType(TransactionActions.UPDATE_TRANSACTION_CATEGORY),
     switchMap((action: TransactionActions.UpdateTransactionCategory) => {
-      const url = 'http://localhost:5002/transactions/' + action.payload.transactionId + '/set_category';
+      const url = 'http://' + this.HOST + ':5002/transactions/' + action.payload.transactionId + '/set_category';
       return this.httpClient.put<Transaction>(url, {categoryId: action.payload.categoryId});
     }),
     map((transaction: Transaction) => {

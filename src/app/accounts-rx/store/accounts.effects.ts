@@ -12,12 +12,13 @@ import { CategoryData } from './accounts.reducers';
 
 @Injectable()
 export class AccountsEffects {
+  private HOST = 'localhost';
   @Effect()
   categoriesFetch = this.actions$.pipe(
     ofType(accountsActions.LOAD_CATEGORIES),
     switchMap((action: accountsActions.LoadCategories) => {
       console.log('handling', action);
-      const url = 'http://localhost:5002/categories';
+      const url = 'http://' + this.HOST + ':5002/categories';
       return this.httpClient.get<Category[]>(url);
     }),
     map((categories: Category[]) => {
@@ -52,7 +53,7 @@ export class AccountsEffects {
   monthlyCategoryDataFetch = this.actions$.pipe(
     ofType(accountsActions.LOAD_MONTHLY_CATEGORY_DATA),
     switchMap((action: accountsActions.LoadMonthlyCategoryData) => {
-      let url = 'http://localhost:5002/categories/';
+      let url = 'http://' + this.HOST + ':5002/categories/';
       if (action.payload) {
         url += action.payload.id;
       } else {
@@ -70,7 +71,7 @@ export class AccountsEffects {
   yearlyCategoryDataFetch = this.actions$.pipe(
     ofType(accountsActions.LOAD_YEARLY_CATEGORY_DATA),
     switchMap((action: accountsActions.LoadYearlyCategoryData) => {
-      let url = 'http://localhost:5002/categories/';
+      let url = 'http://' + this.HOST + ':5002/categories/';
       if (action.payload) {
         url += action.payload.id;
       } else {
@@ -90,7 +91,7 @@ export class AccountsEffects {
     withLatestFrom(this.store.select(state => state.accounts.period)),
     switchMap(([action, period]: [accountsActions.LoadCategoryData, {start: Date, end: Date}]) => {
       const params = new HttpParams().append('start', '' + period.start.getTime()).append('end', '' + period.end.getTime());
-      let url = 'http://localhost:5002/combined_categories/';
+      let url = 'http://' + this.HOST + ':5002/combined_categories/';
       if (action.payload) {
         url += action.payload.id;
       } else {
@@ -107,7 +108,7 @@ export class AccountsEffects {
   monthlyCombinedDataFetch = this.actions$.pipe(
     ofType(accountsActions.LOAD_MONTHLY_COMBINED_DATA),
     switchMap((action: accountsActions.LoadMonthlyCombinedData) => {
-      const url = 'http://localhost:5002/combined';
+      const url = 'http://' + this.HOST + ':5002/combined';
       const params = new HttpParams().set('mode', 'monthly');
       return this.httpClient.get<Combined[]>(url, {params} );
     }),
@@ -127,7 +128,7 @@ export class AccountsEffects {
   yearlyCombinedDataFetch = this.actions$.pipe(
     ofType(accountsActions.LOAD_YEARLY_COMBINED_DATA),
     switchMap((action: accountsActions.LoadYearlyCombinedData) => {
-      const url = 'http://localhost:5002/combined';
+      const url = 'http://' + this.HOST + ':5002/combined';
       const params = new HttpParams().set('mode', 'yearly');
       return this.httpClient.get<Combined[]>(url, {params} );
     }),
@@ -147,7 +148,7 @@ export class AccountsEffects {
   // combinedDataFetch = this.actions$.pipe(
   //   ofType(accountsActions.LOAD_COMBINED_DATA),
   //   switchMap((action: accountsActions.LoadCombinedData) => {
-  //     const url = 'http://localhost:5002/combined';
+  //     const url = 'http://' + this.HOST + ':5002/combined';
   //     const params = new HttpParams().set('mode', action.payload);
   //     return this.httpClient.get<Combined[]>(url, {params} );
   //   }),
