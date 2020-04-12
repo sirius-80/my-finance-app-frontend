@@ -32,7 +32,7 @@ export class SetCategories implements Action {
 
 export class SelectCategory implements Action {
   readonly type = SELECT_CATEGORY;
-  constructor(public payload: string) {}
+  constructor(public payload: Category) {}
 }
 
 export class UpdateTransactionCategory implements Action {

@@ -8,7 +8,6 @@ export class Category extends Entity {
         super(id);
     }
 
-
     getQualifiedName(): string {
         let qname: string;
         if (this.parent) {

@@ -4,7 +4,6 @@ import { Category } from '../category/category';
 
 export const LOAD_ACCOUNTS = 'DOMAIN_LOAD_ACCOUNTS';
 export const SET_ACCOUNTS = 'DOMAIN_SET_ACCOUNTS';
-export const RESOLVE_TRANSACTION_CATEGORY = 'DOMAIN_RESOLVE_TRANSACTION_CATEGORY';
 export const LOAD_CATEGORIES = 'DOMAIN_LOAD_CATEGORIES';
 export const SET_CATEGORIES = 'DOMAIN_SET_CATEGORIES';
 export const UPDATE_TRANSACTION_CATEGORY = 'DOMAIN_UPDATE_TRANSACTION_CATEGORY';
@@ -28,11 +27,6 @@ export class SetCategories implements Action {
   constructor(public payload: Category[]) {}
 }
 
-export class ResolveTransactionCategory implements Action {
-  readonly type = RESOLVE_TRANSACTION_CATEGORY;
-  constructor(public payload: Transaction) {}
-}
-
 export class UpdateTransactionCategory implements Action {
   readonly type = UPDATE_TRANSACTION_CATEGORY;
   constructor(public payload: {transactionId: string, categoryId: string}) {}
@@ -43,7 +37,7 @@ export class UpdateStateTransactionCategory implements Action {
   constructor(public payload: Transaction) {}
 }
 
-export type domainActions = LoadAccounts | SetAccounts | ResolveTransactionCategory
+export type domainActions = LoadAccounts | SetAccounts
  | UpdateTransactionCategory | UpdateStateTransactionCategory
  | LoadCategories | SetCategories
  ;

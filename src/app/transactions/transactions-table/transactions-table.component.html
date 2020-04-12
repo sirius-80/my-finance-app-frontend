@@ -17,7 +17,7 @@
         <!-- Account Column -->
         <ng-container matColumnDef="account">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Account </th>
-          <td mat-cell *matCellDef="let row"> {{row.account}} </td>
+          <td mat-cell *matCellDef="let row"> {{row.account.name}} </td>
         </ng-container>
 
         <!-- Amount Column -->
@@ -44,16 +44,16 @@
           <td mat-cell *matCellDef="let row">
             <mat-form-field>
               <mat-select (selectionChange)="onSetCategory(row.id, $event.value)" id="mySelect" [ngModel]="row.category && row.category.id || '0'">
-                <mat-option *ngFor="let category of ( categories | async )" [value]="category && category.id || '0'">{{ category && category.name || 'None' }}</mat-option>
+                <mat-option *ngFor="let category of ( categories | async )" [value]="category && category.id || '0'">{{ category && category.getQualifiedName() || 'None' }}</mat-option>
               </mat-select>
             </mat-form-field>
           </td>
         </ng-container>
 
-        <!-- Counter_account Column -->
-        <ng-container matColumnDef="counter_account">
+        <!-- CounterAccount Column -->
+        <ng-container matColumnDef="counterAccount">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Counter account </th>
-          <td mat-cell *matCellDef="let row"> {{row.counter_account}} </td>
+          <td mat-cell *matCellDef="let row"> {{row.counterAccount}} </td>
         </ng-container>
 
         <!-- Internal Column -->

@@ -33,19 +33,13 @@ const initialState: State = {
   selectedCategory: null,
 };
 
-function determineSelectedTransactions(state: State, categoryId: string, period: { start: Date, end: Date }) {
-  let selected = null;
-  for (const cat of state.categories) {
-    if (cat.id === categoryId) {
-      selected = cat;
-      break;
-    }
-  }
+function determineSelectedTransactions(state: State, category: Category, period: { start: Date, end: Date }) {
+  let selected = category;
   const selectedTransactions = [];
   if (selected) {
     for (const t of state.transactions) {
       if ((t.category && categoryInheritsFrom(t.category, selected))
-        || (!t.category && selected.id === 0)) {
+        || (!t.category && selected.id.toString() === '0')) {
         t.date = new Date(t.date);
         if (t.date >= period.start && t.date <= period.end) {
           selectedTransactions.push(t);
@@ -56,6 +50,7 @@ function determineSelectedTransactions(state: State, categoryId: string, period:
       return a.date.getTime() - b.date.getTime();
     });
   }
+  console.log('Determined transactions: ', selectedTransactions.length);
   return {
     ...state,
     selectedTransactions,
@@ -87,6 +82,7 @@ export function transactionsReducer(state = initialState, action: TransactionsAc
 
   switch (action.type) {
     case TransactionsActions.SET_TRANSACTIONS:
+      console.log('transactionsReducer: Setting transactions: ', action.payload.length);
       return {
         ...state,
         transactions: action.payload,
@@ -97,7 +93,8 @@ export function transactionsReducer(state = initialState, action: TransactionsAc
         categories: action.payload,
       };
     case TransactionsActions.SELECT_CATEGORY:
-      const newState = determineSelectedTransactions(state, action.payload, { start: new Date(1970, 1), end: new Date() });
+      console.log('transactionsReducer: Selecting category: ', action.payload);
+      const newState = determineSelectedTransactions(state, action.payload, state.selectedPeriod);
       return {
         ...newState,
         barChartData: getBarchartData(newState.selectedTransactions),
@@ -118,7 +115,7 @@ export function transactionsReducer(state = initialState, action: TransactionsAc
         transactions: updatedTransactions,
       }
     case TransactionsActions.SELECT_PERIOD:
-      return determineSelectedTransactions(state, state.selectedCategory.id, action.payload);
+      return determineSelectedTransactions(state, state.selectedCategory, action.payload);
 
     default:
       return state;

@@ -18,7 +18,7 @@ export interface TableTransaction {
   category: Category;
   category_name: string;
   description: string;
-  counter_account: string;
+  counterAccount: string;
   internal: boolean;
 }
 
@@ -30,7 +30,7 @@ export interface TableTransaction {
 export class TransactionsTableComponent implements OnInit {
   categories: Observable<Category[]>;
 
-  displayedColumns: string[] = ['date', 'account', 'amount', 'name', 'description', 'category', 'counter_account', 'internal'];
+  displayedColumns: string[] = ['date', 'account', 'amount', 'name', 'description', 'category', 'counterAccount', 'internal'];
   dataSource: MatTableDataSource<TableTransaction>;
 
   @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
@@ -40,7 +40,7 @@ export class TransactionsTableComponent implements OnInit {
   constructor(private store: Store<AppState>) { }
 
   ngOnInit() {
-    this.categories = this.store.select(state => state.transactions.categories);
+    this.categories = this.store.select(state => state.domain.categories);
     // Assign the data to the data source for the table to render
     this.store.select(state => state.transactions.selectedTransactions).subscribe(
       transactions => {
@@ -57,7 +57,7 @@ export class TransactionsTableComponent implements OnInit {
             category: t.category,
             category_name: t.category && t.category.name || null,
             description: t.description,
-            counter_account: t.counterAccount,
+            counterAccount: t.counterAccount,
             internal: t.internal
           });
         }

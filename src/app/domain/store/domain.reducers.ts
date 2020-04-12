@@ -15,17 +15,19 @@ export function domainReducer(state = initialState, action: domainActions.domain
   console.log('domainReducer: reducing action', action);
   switch (action.type) {
     case domainActions.SET_CATEGORIES:
-      const categories = action.payload;
-      for (const cat of categories) {
+      const categories: Category[] = [];
+      for (const cat of action.payload) {
+        const category = new Category(cat.id, cat.name, null);
         if (cat.parent) {
           for (const parent of categories) {
             if (cat.parent.toString() === parent.id) {
-              cat.parent = parent;
+              category.parent = parent;
             }
           }
         } else {
           console.log('Leaving root-category unchanged', cat);
         }
+        categories.push(category);
       }
       return {
         ...state,
@@ -37,6 +39,7 @@ export function domainReducer(state = initialState, action: domainActions.domain
         console.log('Loading account', account.name);
         for (const transaction of account.transactions) {
           transaction.account = account;
+          transaction.date = new Date(Date.parse(transaction.date.toString()));
           if (transaction.category) {
             for (const category of state.categories) {
               // Note: transaction.category may be either a string (before it's resolved) or a Category (after resolving)
@@ -47,7 +50,7 @@ export function domainReducer(state = initialState, action: domainActions.domain
             }
           }
         }
-        console.log('Account loaded');
+        console.log('Account', account.name, 'loaded');
       }
       return {
         ...state,

@@ -18,6 +18,7 @@ export class CategoryTransactionsComponent implements OnInit, OnDestroy, AfterVi
   private chart: am4charts.XYChart;
   private category: Category;
   private subscription: Subscription;
+  private updateTableTimeout;
 
   constructor(private zone: NgZone,
               private store: Store<AppState>) { }
@@ -47,8 +48,14 @@ export class CategoryTransactionsComponent implements OnInit, OnDestroy, AfterVi
       chart.padding(0, 15, 0, 15);
 
       dateAxis.events.on('selectionextremeschanged', (event) => {
-        this.store.dispatch(new TransactionsActions.SelectPeriod(
-          {start: new Date(event.target.minZoomed), end: new Date(event.target.maxZoomed)}));
+        if (this.updateTableTimeout) {
+          clearTimeout(this.updateTableTimeout);
+        }
+        this.updateTableTimeout = setTimeout(() => {
+          this.updateTableTimeout = null;
+          this.store.dispatch(new TransactionsActions.SelectPeriod(
+            {start: new Date(event.target.minZoomed), end: new Date(event.target.maxZoomed)}));
+        }, 100);
         return event;
       });
       this.populateChart();

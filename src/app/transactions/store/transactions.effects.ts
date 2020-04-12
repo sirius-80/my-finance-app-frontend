@@ -6,8 +6,7 @@ import { switchMap, map, withLatestFrom } from 'rxjs/operators';
 
 import * as TransactionActions from './transactions.actions';
 import { AppState } from 'src/app/store/app.reducers';
-import { Transaction } from 'src/app/domain/account/account';
-import { Category } from 'src/app/domain/category/category';
+import { Transaction, Account } from 'src/app/domain/account/account';
 
 
 @Injectable()
@@ -17,27 +16,21 @@ export class TransactionsEffects {
   @Effect()
   transactionsFetch = this.actions$.pipe(
     ofType(TransactionActions.LOAD_TRANSACTIONS),
-    switchMap((action: TransactionActions.LoadTransactions) => {
-      const url = 'http://' + this.HOST + ':5002/transactions';
-      const params = new HttpParams().set('start', '' + action.payload.start.getTime()).append('end', '' + action.payload.end.getTime());
-      return this.httpClient.get<Transaction[]>(url, {params});
-    }),
-    map((transactions: Transaction[]) => {
+    withLatestFrom(this.store.select(state => state.domain.accounts)),
+    map(([action, accounts]: [TransactionActions.LoadTransactions, Account[]]) => {
+      const transactions: Transaction[] = [];
+      const start = action.payload.start.getTime();
+      const end = action.payload.end.getTime();
+      for (const account of accounts) {
+        for (const transaction of account.transactions) {
+          if (start <= transaction.date.getTime() && transaction.date.getTime() <= end) {
+            transactions.push(transaction);
+          }
+        }
+      }
+      console.log('Selected ', transactions.length, 'transactions between', start, 'and', end);
       return new TransactionActions.SetTransactions(transactions);
-    })
-  );
-
-  @Effect()
-  categoriesFetch = this.actions$.pipe(
-    ofType(TransactionActions.LOAD_CATEGORIES),
-    withLatestFrom(this.store.select(state => domain.categories)),
-    switchMap((action: TransactionActions.LoadCategories) => {
-      const url = 'http://' + this.HOST + ':5002/categories';
-      return this.httpClient.get<Category[]>(url);
     }),
-    map((categories: Category[]) => {
-      return new TransactionActions.SetCategories(categories);
-    })
   );
 
   @Effect()

@@ -33,26 +33,9 @@ export class DomainEffects {
       return this.httpClient.get<Category[]>(url);
     }),
     map((categories: Category[]) => {
-        return new domainActions.SetCategories(categories);
+      return new domainActions.SetCategories(categories);
     }),
   );
-
-  @Effect()
-  doResolveTransactionCategory = this.actions$.pipe(
-    ofType(domainActions.RESOLVE_TRANSACTION_CATEGORY),
-    withLatestFrom(this.store.select(state => state.categories),
-    map(([action, categories]: [domainActions.ResolveTransactionCategory, Category[]]) => {
-      const transaction = action.payload;
-      if (transaction.category && transaction.category instanceof String) {
-        for (const category of categories) {
-          if (transaction.category.toString() === category.id) {
-            transaction.category = category;
-            break;
-          }
-        }
-      }
-      return transaction;
-    })));
 
   @Effect()
   doUpdateTransactionCategory = this.actions$.pipe(
