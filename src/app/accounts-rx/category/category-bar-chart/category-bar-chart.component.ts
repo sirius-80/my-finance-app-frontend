@@ -6,9 +6,9 @@ import am4themes_animated from '@amcharts/amcharts4/themes/animated';
 import am4lang_nl_NL from '@amcharts/amcharts4/lang/nl_NL';
 
 import { AppState } from '../../../store/app.reducers';
-import { Category } from '../../accounts.model';
 import * as AccountsActions from '../../store/accounts.actions';
 import { Subscription } from 'rxjs';
+import { Category } from 'src/app/domain/category/category';
 
 
 @Component({

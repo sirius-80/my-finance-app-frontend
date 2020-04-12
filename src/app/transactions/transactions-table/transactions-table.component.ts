@@ -6,8 +6,8 @@ import {MatTableDataSource} from '@angular/material/table';
 
 import { AppState } from 'src/app/store/app.reducers';
 import { Observable } from 'rxjs';
-import { Category } from '../store/transactions.reducers';
 import * as TransactionsActions from '../store/transactions.actions';
+import { Category } from 'src/app/domain/category/category';
 
 export interface TableTransaction {
   id: string;
@@ -46,7 +46,7 @@ export class TransactionsTableComponent implements OnInit {
       transactions => {
         const tableTransations = [];
         // console.log(transactions);
-        
+
         for (const t of transactions) {
           tableTransations.push({
             id: t.id,
@@ -57,7 +57,7 @@ export class TransactionsTableComponent implements OnInit {
             category: t.category,
             category_name: t.category && t.category.name || null,
             description: t.description,
-            counter_account: t.counter_account,
+            counter_account: t.counterAccount,
             internal: t.internal
           });
         }

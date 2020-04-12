@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Store } from '@ngrx/store';
 import { Effect, Actions, ofType } from '@ngrx/effects';
-import { switchMap, map } from 'rxjs/operators';
+import { switchMap, map, withLatestFrom } from 'rxjs/operators';
 
 import * as TransactionActions from './transactions.actions';
-import { Category, Transaction } from './transactions.reducers';
 import { AppState } from 'src/app/store/app.reducers';
+import { Transaction } from 'src/app/domain/account/account';
+import { Category } from 'src/app/domain/category/category';
 
 
 @Injectable()
@@ -29,6 +30,7 @@ export class TransactionsEffects {
   @Effect()
   categoriesFetch = this.actions$.pipe(
     ofType(TransactionActions.LOAD_CATEGORIES),
+    withLatestFrom(this.store.select(state => domain.categories)),
     switchMap((action: TransactionActions.LoadCategories) => {
       const url = 'http://' + this.HOST + ':5002/categories';
       return this.httpClient.get<Category[]>(url);

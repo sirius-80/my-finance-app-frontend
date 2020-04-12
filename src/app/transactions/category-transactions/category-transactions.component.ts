@@ -1,20 +1,20 @@
-import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, NgZone } from '@angular/core';
 import * as am4core from '@amcharts/amcharts4/core';
 import * as am4charts from '@amcharts/amcharts4/charts';
 import am4themes_animated from '@amcharts/amcharts4/themes/animated';
 import am4lang_nl_NL from '@amcharts/amcharts4/lang/nl_NL';
-import { Category } from 'src/app/accounts-rx/accounts.model';
 import { Store } from '@ngrx/store';
 import { AppState } from 'src/app/store/app.reducers';
 import * as TransactionsActions from '../store/transactions.actions';
 import { Subscription } from 'rxjs';
+import { Category } from 'src/app/domain/category/category';
 
 @Component({
   selector: 'app-category-transactions',
   templateUrl: './category-transactions.component.html',
   styleUrls: ['./category-transactions.component.css']
 })
-export class CategoryTransactionsComponent implements OnInit, OnDestroy {
+export class CategoryTransactionsComponent implements OnInit, OnDestroy, AfterViewInit {
   private chart: am4charts.XYChart;
   private category: Category;
   private subscription: Subscription;

@@ -10,7 +10,3 @@ export interface Combined {
   profit: number;
   loss: number;
 }
-
-export class Category {
-  constructor(public id: string, public name: string) {}
-}

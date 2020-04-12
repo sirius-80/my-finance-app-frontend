@@ -1,6 +1,7 @@
 import { Action } from '@ngrx/store';
-import { Category, Combined, Balance } from '../accounts.model';
+import { Combined, Balance } from '../accounts.model';
 import { CategoryData } from './accounts.reducers';
+import { Category } from 'src/app/domain/category/category';
 
 export const LOAD_CATEGORIES = 'LOAD_CATEGORIES';
 export const SET_CATEGORIES = 'SET_CATEGORIES';

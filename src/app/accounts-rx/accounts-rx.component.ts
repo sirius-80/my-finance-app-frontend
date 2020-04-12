@@ -5,8 +5,9 @@ import { Observable } from 'rxjs';
 import * as fromAccounts from './store/accounts.reducers';
 import * as AccountsActions from './store/accounts.actions';
 import { AppState } from '../store/app.reducers';
-import { Category } from './accounts.model';
 import { Router, ActivatedRoute } from '@angular/router';
+import { first, map } from 'rxjs/operators';
+import { Category } from '../domain/category/category';
 
 
 @Component({
@@ -25,9 +26,13 @@ export class AccountsRxComponent implements OnInit {
 
   ngOnInit() {
     this.accounts = this.store.select('accounts');
-    this.categories = this.store.select(state => state.accounts.categories);
+    this.categories = this.store.select(state => state.domain.categories);
     this.period = this.store.select(state => state.accounts.period);
-    this.onCategory('0');
+    this.store.select(state => state.domain.categories).pipe(
+      map((categories) => {
+        this.onCategory(categories[0].id);
+      }
+    ));
   }
 
   onLoadData() {

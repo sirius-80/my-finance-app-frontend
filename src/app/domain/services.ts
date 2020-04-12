@@ -1,5 +1,5 @@
-import { Category } from '../accounts-rx/accounts.model'
-import { Transaction } from './account/account'
+import { Transaction } from './account/account';
+import { Category } from './category/category';
 
 /**
  * Superclass for mappers that can map a given transaction to one or more specific categories. Every category

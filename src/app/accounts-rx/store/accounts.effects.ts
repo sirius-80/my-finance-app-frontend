@@ -6,8 +6,9 @@ import { switchMap, map, mergeMap, withLatestFrom } from 'rxjs/operators';
 import { AppState } from 'src/app/store/app.reducers';
 import * as accountsActions from './accounts.actions';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Category, Combined, Balance } from '../accounts.model';
+import { Combined, Balance } from '../accounts.model';
 import { CategoryData } from './accounts.reducers';
+import { Category } from 'src/app/domain/category/category';
 
 
 @Injectable()

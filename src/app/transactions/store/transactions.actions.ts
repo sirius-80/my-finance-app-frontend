@@ -1,6 +1,6 @@
 import { Action } from '@ngrx/store';
-import { Transaction } from './transactions.reducers';
-import { Category } from './transactions.reducers';
+import { Category } from 'src/app/domain/category/category';
+import { Transaction } from 'src/app/domain/account/account';
 
 export const LOAD_TRANSACTIONS = 'LOAD_TRANSACTIONS';
 export const SET_TRANSACTIONS = 'SET_TRANSACTIONS';

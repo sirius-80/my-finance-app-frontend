@@ -1,5 +1,6 @@
 import * as accountsActions from './accounts.actions';
-import { Category, Combined, Balance } from '../accounts.model';
+import { Combined, Balance } from '../accounts.model';
+import { Category } from 'src/app/domain/category/category';
 
 
 export interface CategoryData {

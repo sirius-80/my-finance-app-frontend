@@ -4,8 +4,8 @@ import { Store } from '@ngrx/store';
 
 import { AppState } from '../store/app.reducers';
 import * as TransactionsActions from './store/transactions.actions';
-import { Category } from './store/transactions.reducers';
 import { Observable } from 'rxjs';
+import { Category } from '../domain/category/category';
 
 @Component({
   selector: 'app-transactions',
@@ -17,7 +17,7 @@ export class TransactionsComponent implements OnInit {
   constructor(private store: Store<AppState>) { }
 
   ngOnInit() {
-    this.categories = this.store.select(state => state.transactions.categories);
+    this.categories = this.store.select(state => state.domain.categories);
   }
 
   onLoadTransactions() {

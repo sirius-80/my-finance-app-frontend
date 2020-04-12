@@ -1,33 +1,19 @@
 import * as TransactionsActions from './transactions.actions';
 import { act } from '@ngrx/effects';
+import { Category } from 'src/app/domain/category/category';
+import { Transaction } from 'src/app/domain/account/account';
 
-export interface Category {
-  id: string;
-  name: string;
-  parent: Category;
-}
 
 export function categoryInheritsFrom(child: Category, other: Category) {
-  if (other && child.id == other.id) {
+  if (other && child.id === other.id) {
     return true;
   } else if (child.parent) {
     return categoryInheritsFrom(child.parent, other);
   } else {
     return false;
   }
-};
-
-export interface Transaction {
-  id: string;
-  date: Date;
-  account: string;
-  amount: number;
-  name: string;
-  category: Category;
-  description: string;
-  counter_account: string;
-  internal: boolean;
 }
+
 
 export interface State {
   transactions: Transaction[];
@@ -55,7 +41,7 @@ function determineSelectedTransactions(state: State, categoryId: string, period:
       break;
     }
   }
-  let selectedTransactions = [];
+  const selectedTransactions = [];
   if (selected) {
     for (const t of state.transactions) {
       if ((t.category && categoryInheritsFrom(t.category, selected))
@@ -79,7 +65,7 @@ function determineSelectedTransactions(state: State, categoryId: string, period:
 }
 
 function getBarchartData(selectedTransactions: Transaction[]) {
-  let barChartData = [];
+  const barChartData = [];
   let month = null;
   let sum = 0;
   for (const t of selectedTransactions) {
@@ -125,7 +111,7 @@ export function transactionsReducer(state = initialState, action: TransactionsAc
           break;
         }
       }
-      let updatedTransactions = [...state.transactions];
+      const updatedTransactions = [...state.transactions];
       updatedTransactions[index] = action.payload;
       return {
         ...state,
