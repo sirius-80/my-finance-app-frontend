@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import {MatPaginator} from '@angular/material/paginator';
 import {MatSort} from '@angular/material/sort';
-import {MatTableDataSource} from '@angular/material/table';
+import {MatTableDataSource, MatTable} from '@angular/material/table';
 
 import { AppState } from 'src/app/store/app.reducers';
 import { Observable } from 'rxjs';
@@ -31,19 +31,26 @@ export class TransactionsTableComponent implements OnInit {
   categories: Observable<Category[]>;
 
   displayedColumns: string[] = ['date', 'account', 'amount', 'name', 'description', 'category', 'counterAccount', 'internal'];
-  dataSource: MatTableDataSource<TableTransaction>;
+  dataSource = new MatTableDataSource<TableTransaction>();
 
-  @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
-  @ViewChild(MatSort, {static: true}) sort: MatSort;
-
+  @ViewChild(MatPaginator, {static: true})
+  paginator: MatPaginator;
+  @ViewChild(MatSort, {static: true})
+  sort: MatSort;
+  @ViewChild(MatTable, {static: true})
+  table: MatTable<TableTransaction>;
 
   constructor(private store: Store<AppState>) { }
 
   ngOnInit() {
     this.categories = this.store.select(state => state.domain.categories);
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+
     // Assign the data to the data source for the table to render
     this.store.select(state => state.transactions.selectedTransactions).subscribe(
       transactions => {
+        console.log('Updating transactions', transactions.length);
         const tableTransations = [];
         // console.log(transactions);
 
@@ -61,10 +68,8 @@ export class TransactionsTableComponent implements OnInit {
             internal: t.internal
           });
         }
-        // console.log('Updating transactions table');
-        this.dataSource = new MatTableDataSource(tableTransations);
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
+        this.dataSource.data = tableTransations;
+        console.log('Done updating transaction table');
       }
     );
     this.dataSource.sort.sort({id: 'date', start: 'asc', disableClear: false});

@@ -7,6 +7,7 @@ import { switchMap, map, withLatestFrom } from 'rxjs/operators';
 import * as TransactionActions from './transactions.actions';
 import { AppState } from 'src/app/store/app.reducers';
 import { Transaction, Account } from 'src/app/domain/account/account';
+import { Category } from 'src/app/domain/category/category';
 
 
 @Injectable()
@@ -31,6 +32,16 @@ export class TransactionsEffects {
       console.log('Selected ', transactions.length, 'transactions between', start, 'and', end);
       return new TransactionActions.SetTransactions(transactions);
     }),
+  );
+
+  @Effect()
+  selectTransactionById = this.actions$.pipe(
+    ofType(TransactionActions.SELECT_CATEGORY_BY_ID),
+    withLatestFrom(this.store.select(state => state.domain.categories)),
+    map(([action, categories]: [TransactionActions.SelectCategoryById, Category[]]) => {
+      console.log('Selecting category via effect');
+      return new TransactionActions.SelectCategory(categories.find((category) => category.id === action.payload));
+    })
   );
 
   @Effect()

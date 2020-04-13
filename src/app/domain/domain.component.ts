@@ -12,14 +12,8 @@ export class DomainComponent implements OnInit {
   constructor(private store: Store<State>) { }
 
   ngOnInit(): void {
-  }
-
-  onLoadCategories(): void {
+    console.log('Loading domain: categories and transactions');
     this.store.dispatch(new domainActions.LoadCategories());
-  }
-
-  onLoadAccounts(): void {
     this.store.dispatch(new domainActions.LoadAccounts());
   }
-
 }

@@ -1,5 +1,4 @@
 import * as TransactionsActions from './transactions.actions';
-import { act } from '@ngrx/effects';
 import { Category } from 'src/app/domain/category/category';
 import { Transaction } from 'src/app/domain/account/account';
 
@@ -40,7 +39,6 @@ function determineSelectedTransactions(state: State, category: Category, period:
     for (const t of state.transactions) {
       if ((t.category && categoryInheritsFrom(t.category, selected))
         || (!t.category && selected.id.toString() === '0')) {
-        t.date = new Date(t.date);
         if (t.date >= period.start && t.date <= period.end) {
           selectedTransactions.push(t);
         }
@@ -115,8 +113,9 @@ export function transactionsReducer(state = initialState, action: TransactionsAc
         transactions: updatedTransactions,
       }
     case TransactionsActions.SELECT_PERIOD:
-      return determineSelectedTransactions(state, state.selectedCategory, action.payload);
-
+      return {
+        ...determineSelectedTransactions(state, state.selectedCategory, action.payload)
+      };
     default:
       return state;
   }

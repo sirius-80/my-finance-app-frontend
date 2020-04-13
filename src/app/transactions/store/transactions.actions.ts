@@ -7,6 +7,7 @@ export const SET_TRANSACTIONS = 'SET_TRANSACTIONS';
 export const LOAD_CATEGORIES = 'LOAD_CATEGORIES';
 export const SET_CATEGORIES = 'SET_CATEGORIES';
 export const SELECT_CATEGORY = 'SELECT_CATEGORY';
+export const SELECT_CATEGORY_BY_ID = 'SELECT_CATEGORY_BY_ID';
 export const UPDATE_TRANSACTION_CATEGORY = 'UPDATE_TRANSACTION_CATEGORY';
 export const UPDATE_STATE_TRANSACTION_CATEGORY = 'UPDATE_STATE_TRANSACTION_CATEGORY';
 export const SELECT_PERIOD = 'SELECT_PERIOD';
@@ -28,6 +29,11 @@ export class LoadCategories implements Action {
 export class SetCategories implements Action {
   readonly type = SET_CATEGORIES;
   constructor(public payload: Category[]) {}
+}
+
+export class SelectCategoryById implements Action {
+  readonly type = SELECT_CATEGORY_BY_ID;
+  constructor(public payload: string) {}
 }
 
 export class SelectCategory implements Action {
@@ -52,6 +58,6 @@ export class SelectPeriod implements Action {
 
 export type transactionsActions = LoadTransactions | SetTransactions
  | UpdateTransactionCategory | UpdateStateTransactionCategory
- | LoadCategories | SetCategories | SelectCategory
+ | LoadCategories | SetCategories | SelectCategoryById | SelectCategory
  | SelectPeriod
  ;
