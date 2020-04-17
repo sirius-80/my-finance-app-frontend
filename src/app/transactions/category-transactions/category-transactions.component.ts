@@ -6,8 +6,9 @@ import am4lang_nl_NL from '@amcharts/amcharts4/lang/nl_NL';
 import { Store } from '@ngrx/store';
 import { AppState } from 'src/app/store/app.reducers';
 import * as TransactionsActions from '../store/transactions.actions';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
 import { Category } from 'src/app/domain/category/category';
+import { debounceTime, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-category-transactions',
@@ -19,6 +20,8 @@ export class CategoryTransactionsComponent implements OnInit, OnDestroy, AfterVi
   private category: Category;
   private subscription: Subscription;
   private updateTableTimeout;
+  private periodSubject: Subject<any>;
+  private periodSubscription: Subscription;
 
   constructor(private zone: NgZone,
               private store: Store<AppState>) { }
@@ -28,16 +31,14 @@ export class CategoryTransactionsComponent implements OnInit, OnDestroy, AfterVi
   }
 
   ngAfterViewInit() {
+    this.periodSubject = new Subject<any>();
+
     this.zone.runOutsideAngular(() => {
       const chart = am4core.create('category-transactions-div', am4charts.XYChart);
       chart.language.locale = am4lang_nl_NL;
-
       const dateAxis = chart.xAxes.push(new am4charts.DateAxis());
-
       const amountSeries = this.createCategorySeries(chart);
-
       this.chart = chart;
-
       const scrollbarX = new am4charts.XYChartScrollbar();
       scrollbarX.series.push(amountSeries);
       chart.scrollbarX = scrollbarX;
@@ -48,18 +49,17 @@ export class CategoryTransactionsComponent implements OnInit, OnDestroy, AfterVi
       chart.padding(0, 15, 0, 15);
 
       dateAxis.events.on('selectionextremeschanged', (event) => {
-        if (this.updateTableTimeout) {
-          clearTimeout(this.updateTableTimeout);
-        }
-        this.updateTableTimeout = setTimeout(() => {
-          this.updateTableTimeout = null;
-          this.store.dispatch(new TransactionsActions.SelectPeriod(
-            {start: new Date(event.target.minZoomed), end: new Date(event.target.maxZoomed)}));
-        }, 100);
-        return event;
+        this.periodSubject.next(event);
       });
-      this.populateChart();
     });
+    this.periodSubscription = this.periodSubject.pipe(
+      debounceTime(100),
+      distinctUntilChanged()
+    ).subscribe(event => {
+      this.store.dispatch(new TransactionsActions.SelectPeriod(
+        {start: new Date(event.target.minZoomed), end: new Date(event.target.maxZoomed)}));
+    });
+    this.populateChart();
   }
 
   private createCategorySeries(chart: am4charts.XYChart) {
@@ -76,21 +76,19 @@ export class CategoryTransactionsComponent implements OnInit, OnDestroy, AfterVi
   private populateChart() {
     this.subscription = this.store.select(state => state.transactions.barChartData).subscribe(
       (currentCategoryData) => {
-        // console.log('Update category bar chart', currentCategoryData);
         this.chart.data = currentCategoryData;
       });
   }
 
   ngOnDestroy(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-      this.subscription = null;
-    }
+    this.subscription.unsubscribe();
     this.zone.runOutsideAngular(() => {
       if (this.chart) {
         this.chart.dispose();
         this.chart = null;
       }
     });
+    this.periodSubscription.unsubscribe();
+    this.periodSubject.complete();
   }
 }

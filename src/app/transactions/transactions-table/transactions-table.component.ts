@@ -1,11 +1,11 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import {MatPaginator} from '@angular/material/paginator';
 import {MatSort} from '@angular/material/sort';
 import {MatTableDataSource, MatTable} from '@angular/material/table';
 
 import { AppState } from 'src/app/store/app.reducers';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import * as TransactionsActions from '../store/transactions.actions';
 import { Category } from 'src/app/domain/category/category';
 
@@ -27,7 +27,7 @@ export interface TableTransaction {
   templateUrl: './transactions-table.component.html',
   styleUrls: ['./transactions-table.component.css']
 })
-export class TransactionsTableComponent implements OnInit {
+export class TransactionsTableComponent implements OnInit, OnDestroy {
   categories: Observable<Category[]>;
 
   displayedColumns: string[] = ['date', 'account', 'amount', 'name', 'description', 'category', 'counterAccount', 'internal'];
@@ -39,8 +39,12 @@ export class TransactionsTableComponent implements OnInit {
   sort: MatSort;
   @ViewChild(MatTable, {static: true})
   table: MatTable<TableTransaction>;
+  private subscription: Subscription;
 
   constructor(private store: Store<AppState>) { }
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
 
   ngOnInit() {
     this.categories = this.store.select(state => state.domain.categories);
@@ -48,7 +52,7 @@ export class TransactionsTableComponent implements OnInit {
     this.dataSource.sort = this.sort;
 
     // Assign the data to the data source for the table to render
-    this.store.select(state => state.transactions.selectedTransactions).subscribe(
+    this.subscription = this.store.select(state => state.transactions.selectedTransactions).subscribe(
       transactions => {
         console.log('Updating transactions', transactions.length);
         const tableTransations = [];
