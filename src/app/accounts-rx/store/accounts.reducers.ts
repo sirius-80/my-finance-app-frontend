@@ -16,7 +16,7 @@ export interface CategoryPeriodicData {
 }
 
 export interface State  {
-  categories: Category[];
+  // categories: Category[];
   selectedCategory: Category;
   granularity: string;
   period: {start: Date, end: Date};
@@ -31,7 +31,7 @@ export interface State  {
 }
 
 const initialState: State = {
-  categories: [],
+  // categories: [],
   selectedCategory: null,
   granularity: 'monthly',
   period: {
@@ -50,22 +50,10 @@ const initialState: State = {
 
 export function accountsReducer(state = initialState, action: accountsActions.accountsActions) {
   switch (action.type) {
-    case accountsActions.SET_CATEGORIES:
-      return {
-        ...state,
-        categories: action.payload
-      };
     case accountsActions.SELECT_CATEGORY:
-      let selected = null;
-      for (const cat of state.categories) {
-        if (cat.id === action.payload) {
-          selected = cat;
-          break;
-        }
-      }
       return {
         ...state,
-        selectedCategory: selected
+        selectedCategory: action.payload
       };
     case accountsActions.SET_GRANULARITY:
       let categoryData = state.categoryMonthlyData;

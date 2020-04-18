@@ -3,31 +3,27 @@ import { Combined, Balance } from '../accounts.model';
 import { CategoryData } from './accounts.reducers';
 import { Category } from 'src/app/domain/category/category';
 
-export const LOAD_CATEGORIES = 'LOAD_CATEGORIES';
-export const SET_CATEGORIES = 'SET_CATEGORIES';
-export const SELECT_CATEGORY = 'SELECT_CATEGORY';
+export const SELECT_CATEGORY = '[Accounts] SELECT_CATEGORY';
+export const SELECT_CATEGORY_BY_ID = '[Accounts] SELECT_CATEGORY_BY_ID';
 
-export const LOAD_ALL_CATEGORY_DATA = 'LOAD_ALL_CATEGORY_DATA';
-export const LOAD_CATEGORY_DATA = 'LOAD_CATEGORY_DATA';
-export const SET_CATEGORY_DATA = 'SET_CATEGORY_DATA';
-export const LOAD_MONTHLY_CATEGORY_DATA = 'LOAD_MONTHLY_CATEGORY_DATA';
-export const SET_MONTHLY_CATEGORY_DATA = 'SET_MONTHLY_CATEGORY_DATA';
-export const LOAD_YEARLY_CATEGORY_DATA = 'LOAD_YEARLY_CATEGORY_DATA';
-export const SET_YEARLY_CATEGORY_DATA = 'SET_YEARLY_CATEGORY_DATA';
+export const LOAD_ALL_CATEGORY_DATA = '[Accounts] LOAD_ALL_CATEGORY_DATA';
+export const LOAD_CATEGORY_DATA = '[Accounts] LOAD_CATEGORY_DATA';
+export const SET_CATEGORY_DATA = '[Accounts] SET_CATEGORY_DATA';
+export const LOAD_MONTHLY_CATEGORY_DATA = '[Accounts] LOAD_MONTHLY_CATEGORY_DATA';
+export const SET_MONTHLY_CATEGORY_DATA = '[Accounts] SET_MONTHLY_CATEGORY_DATA';
+export const LOAD_YEARLY_CATEGORY_DATA = '[Accounts] LOAD_YEARLY_CATEGORY_DATA';
+export const SET_YEARLY_CATEGORY_DATA = '[Accounts] SET_YEARLY_CATEGORY_DATA';
 
-export const LOAD_COMBINED_DATA = 'LOAD_COMBINED_DATA';
-export const LOAD_MONTHLY_COMBINED_DATA = 'LOAD_MONTHLY_COMBINED_DATA';
-export const SET_MONTHLY_COMBINED_DATA = 'SET_MONTHLY_COMBINED_DATA';
-export const LOAD_YEARLY_COMBINED_DATA = 'LOAD_YEARLY_COMBINED_DATA';
-export const SET_YEARLY_COMBINED_DATA = 'SET_YEARLY_COMBINED_DATA';
+export const LOAD_COMBINED_DATA = '[Accounts] LOAD_COMBINED_DATA';
+export const LOAD_MONTHLY_COMBINED_DATA = '[Accounts] LOAD_MONTHLY_COMBINED_DATA';
+export const SET_MONTHLY_COMBINED_DATA = '[Accounts] SET_MONTHLY_COMBINED_DATA';
+export const LOAD_YEARLY_COMBINED_DATA = '[Accounts] LOAD_YEARLY_COMBINED_DATA';
+export const SET_YEARLY_COMBINED_DATA = '[Accounts] SET_YEARLY_COMBINED_DATA';
 
-export const SET_GRANULARITY = 'SET_GRANULARITY';
-export const SET_PERIOD = 'SET_PERIOD';
-export const SELECT_PERIOD = 'SELECT_PERIOD';
+export const SET_GRANULARITY = '[Accounts] SET_GRANULARITY';
+export const SET_PERIOD = '[Accounts] SET_PERIOD';
+export const SELECT_PERIOD = '[Accounts] SELECT_PERIOD';
 
-export class LoadCategories implements Action {
-  readonly type = LOAD_CATEGORIES;
-}
 
 export class LoadAllCategoryData implements Action {
   readonly type = LOAD_ALL_CATEGORY_DATA;
@@ -86,14 +82,14 @@ export class SetYearlyCombinedData implements Action {
   constructor(public payload: Combined[]) {}
 }
 
-export class SetCategories implements Action {
-  readonly type = SET_CATEGORIES;
-  constructor(public payload: Category[]) {}
+export class SelectCategoryById implements Action {
+  readonly type = SELECT_CATEGORY_BY_ID;
+  constructor(public payload: string) {}
 }
 
 export class SelectCategory implements Action {
   readonly type = SELECT_CATEGORY;
-  constructor(public payload: string) {}
+  constructor(public payload: Category) {}
 }
 
 export class SetGranularity implements Action {
@@ -111,7 +107,7 @@ export class SelectPeriod implements Action {
   constructor(public payload: {start: Date, end: Date}) {}
 }
 
-export type accountsActions = LoadCategories | SetCategories | SelectCategory
+export type accountsActions = SelectCategory
    | LoadAllCategoryData | LoadCategoryData | SetCategoryData
    | LoadMonthlyCategoryData | SetMonthlyCategoryData
    | LoadYearlyCategoryData | SetYearlyCategoryData

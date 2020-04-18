@@ -14,16 +14,14 @@ import { Category } from 'src/app/domain/category/category';
 @Injectable()
 export class AccountsEffects {
   private HOST = 'localhost';
+
   @Effect()
-  categoriesFetch = this.actions$.pipe(
-    ofType(accountsActions.LOAD_CATEGORIES),
-    switchMap((action: accountsActions.LoadCategories) => {
-      console.log('handling', action);
-      const url = 'http://' + this.HOST + ':5002/categories';
-      return this.httpClient.get<Category[]>(url);
-    }),
-    map((categories: Category[]) => {
-      return new accountsActions.SetCategories(categories);
+  selectCategoryById = this.actions$.pipe(
+    ofType(accountsActions.SELECT_CATEGORY_BY_ID),
+    withLatestFrom(this.store.select(state => state.domain.categories)),
+    map(([action, categories]: [accountsActions.SelectCategoryById, Category[]]) => {
+      console.log('Selecting category via effect');
+      return new accountsActions.SelectCategory(categories.find((category) => category.id === action.payload));
     })
   );
 
@@ -144,20 +142,6 @@ export class AccountsEffects {
       return actions;
     })
   );
-
-  // @Effect()
-  // combinedDataFetch = this.actions$.pipe(
-  //   ofType(accountsActions.LOAD_COMBINED_DATA),
-  //   switchMap((action: accountsActions.LoadCombinedData) => {
-  //     const url = 'http://' + this.HOST + ':5002/combined';
-  //     const params = new HttpParams().set('mode', action.payload);
-  //     return this.httpClient.get<Combined[]>(url, {params} );
-  //   }),
-  //   map((combined: Combined[]) => {
-  //     // TODO: FIXME: Need to call either monthly of yearly!
-  //     return new accountsActions.SetMonthlyCombinedData(combined);
-  //   })
-  // );
 
   constructor(private actions$: Actions,
               private httpClient: HttpClient,

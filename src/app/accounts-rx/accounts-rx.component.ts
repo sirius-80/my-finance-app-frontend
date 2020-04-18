@@ -6,7 +6,7 @@ import * as fromAccounts from './store/accounts.reducers';
 import * as AccountsActions from './store/accounts.actions';
 import { AppState } from '../store/app.reducers';
 import { Router, ActivatedRoute } from '@angular/router';
-import { first, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { Category } from '../domain/category/category';
 
 
@@ -36,7 +36,6 @@ export class AccountsRxComponent implements OnInit {
   }
 
   onLoadData() {
-    this.store.dispatch(new AccountsActions.LoadCategories());
     this.store.dispatch(new AccountsActions.LoadCombinedData());
     this.store.select(state => state.accounts.selectedCategory).subscribe(
       category => {
@@ -48,7 +47,7 @@ export class AccountsRxComponent implements OnInit {
   onCategory(categoryId: string) {
     console.log(categoryId);
     this.router.navigate([categoryId], {relativeTo: this.route});
-    this.store.dispatch(new AccountsActions.SelectCategory(categoryId));
+    this.store.dispatch(new AccountsActions.SelectCategoryById(categoryId));
   }
 
   onGranularityChange(granularity: string) {

@@ -35,7 +35,7 @@ export class TransactionsEffects {
   );
 
   @Effect()
-  selectTransactionById = this.actions$.pipe(
+  selectCategoryById = this.actions$.pipe(
     ofType(TransactionActions.SELECT_CATEGORY_BY_ID),
     withLatestFrom(this.store.select(state => state.domain.categories)),
     map(([action, categories]: [TransactionActions.SelectCategoryById, Category[]]) => {

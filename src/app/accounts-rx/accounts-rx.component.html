@@ -4,7 +4,7 @@
     <mat-form-field>
       <mat-label>Select a category</mat-label>
       <mat-select (selectionChange)="onCategory($event.value)" [ngModel]="0">
-        <mat-option *ngFor="let category of ( categories | async )" [value]="category.id">{{ category.name }}</mat-option>
+        <mat-option *ngFor="let category of ( categories | async )" [value]="category.id">{{ category.getQualifiedName() }}</mat-option>
       </mat-select>
     </mat-form-field>
     <mat-radio-group [ngModel]="'monthly'" aria-label="Select granularity" (change)="onGranularityChange($event.value)">
