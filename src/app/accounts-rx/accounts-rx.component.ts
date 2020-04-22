@@ -30,22 +30,25 @@ export class AccountsRxComponent implements OnInit {
     this.period = this.store.select(state => state.accounts.period);
     this.store.select(state => state.domain.categories).pipe(
       map((categories) => {
-        this.onCategory(categories[0].id);
-      }
+          this.onCategory(categories[0].id);
+        }
     ));
   }
 
   onLoadData() {
-    this.store.dispatch(new AccountsActions.LoadCombinedData());
+    // this.store.dispatch(new AccountsActions.LoadCombinedData());
     this.store.select(state => state.accounts.selectedCategory).subscribe(
       category => {
-        this.store.dispatch(new AccountsActions.LoadAllCategoryData(category));
+        console.log('Dispatching LoadAllCategoryData for category, ', category);
+        if (category) {
+          return this.store.dispatch(new AccountsActions.LoadAllCategoryData(category));
+        }
       }
     );
   }
 
   onCategory(categoryId: string) {
-    console.log(categoryId);
+    console.log('onCategory', categoryId);
     this.router.navigate([categoryId], {relativeTo: this.route});
     this.store.dispatch(new AccountsActions.SelectCategoryById(categoryId));
   }

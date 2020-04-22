@@ -4,7 +4,7 @@ import * as am4charts from '@amcharts/amcharts4/charts';
 import * as am4plugins_sunburst from '@amcharts/amcharts4/plugins/sunburst';
 import am4themes_animated from '@amcharts/amcharts4/themes/animated';
 import { Store } from '@ngrx/store';
-import { takeLast, withLatestFrom, map } from 'rxjs/operators';
+import { takeLast, withLatestFrom, map, debounceTime } from 'rxjs/operators';
 
 import { AppState } from 'src/app/store/app.reducers';
 import * as AccountsActions from '../../store/accounts.actions';
@@ -96,16 +96,13 @@ export class CategoryHierarchyChartComponent implements OnInit, AfterViewInit, O
       )
     );
     this.store.select(state => state.accounts.period).pipe(
+      debounceTime(100),
       withLatestFrom(this.store.select(state => state.accounts.selectedCategory)),
       map(([period, category]) => {
         console.log('Reloading categorydata');
-        if (this.updateTimer) {
-          clearTimeout(this.updateTimer);
+        if (category) {
+          this.store.dispatch(new AccountsActions.LoadCategoryData(category));
         }
-        this.updateTimer = setTimeout(
-          () => this.store.dispatch(new AccountsActions.LoadCategoryData(category)),
-          500
-        );
       })
     ).subscribe();
     // this.subscription = this.saldoService.category.subscribe(category => {

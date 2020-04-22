@@ -49,6 +49,7 @@ const initialState: State = {
 };
 
 export function accountsReducer(state = initialState, action: accountsActions.accountsActions) {
+  console.log('accountsReducer: reducing action', action);
   switch (action.type) {
     case accountsActions.SELECT_CATEGORY:
       return {
@@ -83,7 +84,6 @@ export function accountsReducer(state = initialState, action: accountsActions.ac
         monthlyData: action.payload,
         currentData,
       };
-      break;
     case accountsActions.SET_YEARLY_COMBINED_DATA:
       let currentData2 = action.payload;
       if (state.granularity === 'monthly') {
@@ -94,7 +94,6 @@ export function accountsReducer(state = initialState, action: accountsActions.ac
         yearlyData: action.payload,
         currentData: currentData2,
       };
-      break;
     case accountsActions.SET_CATEGORY_DATA:
       return {
         ...state,

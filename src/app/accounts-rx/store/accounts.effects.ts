@@ -1,14 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Effect, Actions, ofType } from '@ngrx/effects';
-import { switchMap, map, mergeMap, withLatestFrom } from 'rxjs/operators';
+import { switchMap, map, mergeMap, withLatestFrom, concatMap, groupBy, toArray, reduce, mergeAll, concatAll, filter, tap, buffer } from 'rxjs/operators';
 
 import { AppState } from 'src/app/store/app.reducers';
 import * as accountsActions from './accounts.actions';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Combined, Balance } from '../accounts.model';
-import { CategoryData } from './accounts.reducers';
 import { Category } from 'src/app/domain/category/category';
+import { of, from, zip } from 'rxjs';
+import { Account, Transaction } from 'src/app/domain/account/account';
+import { CategoryData } from './accounts.reducers';
 
 
 @Injectable()
@@ -84,24 +86,104 @@ export class AccountsEffects {
     })
   );
 
+  // @Effect()
+  // categoryDataFetch = this.actions$.pipe(
+  //   ofType(accountsActions.LOAD_CATEGORY_DATA),
+  //   withLatestFrom(this.store.select(state => state.accounts.period)),
+  //   switchMap(([action, period]: [accountsActions.LoadCategoryData, {start: Date, end: Date}]) => {
+  //     const params = new HttpParams().append('start', '' + period.start.getTime()).append('end', '' + period.end.getTime());
+  //     let url = 'http://' + this.HOST + ':5002/combined_categories/';
+  //     if (action.payload) {
+  //       url += action.payload.id;
+  //     } else {
+  //       url += '0';
+  //     }
+  //     return this.httpClient.get<CategoryData[]>(url, {params});
+  //   }),
+  //   map((data: CategoryData[]) => {
+  //     return new accountsActions.SetCategoryData(data);
+  //   })
+  // );
+
   @Effect()
   categoryDataFetch = this.actions$.pipe(
     ofType(accountsActions.LOAD_CATEGORY_DATA),
-    withLatestFrom(this.store.select(state => state.accounts.period)),
-    switchMap(([action, period]: [accountsActions.LoadCategoryData, {start: Date, end: Date}]) => {
-      const params = new HttpParams().append('start', '' + period.start.getTime()).append('end', '' + period.end.getTime());
-      let url = 'http://' + this.HOST + ':5002/combined_categories/';
-      if (action.payload) {
-        url += action.payload.id;
-      } else {
-        url += '0';
-      }
-      return this.httpClient.get<CategoryData[]>(url, {params});
+    withLatestFrom(this.store.select(state => state.domain.accounts)),
+    tap(([action, accounts]) => console.log('TAP0:', action, accounts)),
+    switchMap(([action, accounts]: [accountsActions.LoadCategoryData, Account[]]) => {
+      console.log('TAP1:', action, accounts);
+      return from(accounts).pipe(
+        map((account: Account) => account.transactions),
+        tap(val => console.log('TAP2 (mapped):', val)),
+        mergeAll(),
+        // tap(val => console.log('TAP3 (mergeAll):', val)), // TOO MANY VALUES!
+        filter((transaction: Transaction) => transaction.category == action.payload || (transaction.category && transaction.category.inheritsFrom(action.payload))),
+        // tap(val => console.log('TAP4 (filtered):', val)), // TOO MANY VALUES!
+        groupBy((transaction: Transaction) => transaction.category),
+        tap(group => console.log('TAP5 (grouped):', group)),
+        map(group => {
+          return zip(of(group.key), group.pipe(
+            toArray(),
+            tap(val => console.log('TAP6 (toArray):', val)),
+            mergeMap(transaction => transaction),
+            map(transaction => transaction.amount),
+            reduce((acc, val) => acc + val),
+            tap(val => console.log('TAP7 (reduced):', val)),
+          ))
+        }),
+        mergeMap(val => val), // Unpack sub-arrays
+        tap(val => console.log('TAP8 (mergeMapped):', val)),
+        map(value => {
+          return {category: value[0], amount: value[1], children: []};
+        }),
+        tap(val => console.log('TAP9 (final):', val.category.getQualifiedName(), val.amount)), // Never happens...
+        toArray(),
+        tap(val => console.log('TAP10 (unstructured)', val)),
+        map((data: CategoryData[]) => {
+          const organized: CategoryData[] = [];
+          for (const child of data) {
+            console.log('Processing child', child.category);
+            
+            for (const parent of data) {
+              if (child.category.parent && parent.category.id && child.category.parent.id === parent.category.id) {
+                console.log('Adding child', child, 'to parent', parent);
+                parent.children.push(child);
+              }
+            }
+          }
+          for (const d of data) {
+            if (d.category.parent === null) { 
+              organized.push(d);
+            }
+          }
+          return organized;
+        })
+      );
     }),
-    map((data: CategoryData[]) => {
-      return new accountsActions.SetCategoryData(data);
-    })
+    tap(val => console.log('TAP11 (structured)', val)),
+    map((data: CategoryData[]) => new accountsActions.SetCategoryData(data)),
   );
+
+  // @Effect()
+  // loadCombinedData = this.actions$.pipe(
+  //   ofType(accountsActions.LOAD_MONTHLY_COMBINED_DATA),
+  //   withLatestFrom(this.store.select(state => state.domain.accounts)),
+  //   map(([action, accounts]) => accounts),
+  //   concatMap(of),
+  //   mergeMap((account: Account) => account.transactions),
+  //   withLatestFrom(this.store.select(state => state.accounts.selectedCategory)),
+  //   map(([transaction, category]: [Transaction, Category]) => {
+  //     return {
+  //       date: transaction.date,
+  //       balance: transaction.balanceAfter,
+  //       income: transaction.amount > 0 && transaction.amount || 0,
+  //       expenses: transaction.amount < 0 && transaction.amount || 0,
+  //       profit: 0,
+  //       loss: 0,
+  //     };
+  //   })
+  //  TODO: combine into monhtly chunks!
+  // )
 
   @Effect()
   monthlyCombinedDataFetch = this.actions$.pipe(

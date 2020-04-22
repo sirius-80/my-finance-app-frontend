@@ -44,6 +44,7 @@ export class TransactionsEffects {
     })
   );
 
+  // TODO: Migrate transaction category update to frontend domain model
   @Effect()
   transactionCategoryUpdate = this.actions$.pipe(
     ofType(TransactionActions.UPDATE_TRANSACTION_CATEGORY),
