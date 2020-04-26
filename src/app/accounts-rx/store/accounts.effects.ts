@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Effect, Actions, ofType } from '@ngrx/effects';
-import { switchMap, map, mergeMap, withLatestFrom, concatMap, groupBy, toArray, reduce, mergeAll, concatAll, filter, tap, buffer } from 'rxjs/operators';
+import { switchMap, map, mergeMap, withLatestFrom, groupBy, toArray, reduce, mergeAll, filter, tap } from 'rxjs/operators';
 
 import { AppState } from 'src/app/store/app.reducers';
 import * as accountsActions from './accounts.actions';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Combined, Balance } from '../accounts.model';
 import { Category } from 'src/app/domain/category/category';
-import { of, from, zip } from 'rxjs';
+import { of, from, zip, Observable } from 'rxjs';
 import { Account, Transaction } from 'src/app/domain/account/account';
 import { CategoryData } from './accounts.reducers';
 
@@ -86,75 +86,54 @@ export class AccountsEffects {
     })
   );
 
-  // @Effect()
-  // categoryDataFetch = this.actions$.pipe(
-  //   ofType(accountsActions.LOAD_CATEGORY_DATA),
-  //   withLatestFrom(this.store.select(state => state.accounts.period)),
-  //   switchMap(([action, period]: [accountsActions.LoadCategoryData, {start: Date, end: Date}]) => {
-  //     const params = new HttpParams().append('start', '' + period.start.getTime()).append('end', '' + period.end.getTime());
-  //     let url = 'http://' + this.HOST + ':5002/combined_categories/';
-  //     if (action.payload) {
-  //       url += action.payload.id;
-  //     } else {
-  //       url += '0';
-  //     }
-  //     return this.httpClient.get<CategoryData[]>(url, {params});
-  //   }),
-  //   map((data: CategoryData[]) => {
-  //     return new accountsActions.SetCategoryData(data);
-  //   })
-  // );
-
+  convertCategoryDataToDisplayElement(cd: CategoryData) {
+    const element: any = {name: cd.category.name, value: cd.amount};
+    if (cd.children.length > 0) {
+      element.children = [];
+      for (const child of cd.children) {
+        element.children.push(this.convertCategoryDataToDisplayElement(child));
+      }
+    }
+    return element;
+  }
 
   // TODO: Fix selection of None category (display root categories), and CLEAN-UP!
   @Effect()
-  categoryDataFetch2 = this.actions$.pipe(
+  categoryDataFetch = this.actions$.pipe(
     ofType(accountsActions.LOAD_CATEGORY_DATA),
+    
+    // Get category hiearchy (selected category and all sub-categories)
     withLatestFrom(this.store.select(state => state.domain.categories)),
     switchMap(([action, categories]: [accountsActions.LoadCategoryData, Category[]]) => {
       return from(categories).pipe(
-        filter(cat => cat.id === action.payload.id || cat.inheritsFrom(action.payload)),
+        filter(cat => cat === action.payload || cat.inheritsFrom(action.payload)),
         toArray(),
       )
     }),
+    
     withLatestFrom(this.store.select(state => state.domain.accounts)),
-    // tap(([categories, accounts]) => console.log('TAP0:', categories, accounts)),
     switchMap(([categories, accounts]: [Category[], Account[]]) => {
-      // console.log('TAP1:', categories, accounts);
       return from(accounts).pipe(
-        map((account: Account) => account.transactions),
-        // tap(val => console.log('TAP2 (mapped):', val)),
-        mergeAll(),
-        // tap(val => console.log('TAP3 (mergeAll):', val)), // TOO MANY VALUES!
+        mergeMap((account: Account) => account.transactions),
         filter((transaction: Transaction) => categories.indexOf(transaction.category) >= 0),
-        // tap(val => console.log('TAP4 (filtered):', val)), // TOO MANY VALUES!
         groupBy((transaction: Transaction) => transaction.category),
-        // tap(group => console.log('TAP5 (grouped):', group)),
         map(group => {
           return zip(of(group.key), group.pipe(
-            toArray(),
-            // tap(val => console.log('TAP6 (toArray):', val)),
-            mergeMap(transaction => transaction),
-            map(transaction => transaction.amount),
-            reduce((acc, val) => acc + val),
-            // tap(val => console.log('TAP7 (reduced):', val)),
+            reduce((acc: number, val: Transaction) => acc + val.amount, 0),
           ))
         }),
-        mergeMap(val => val), // Unpack sub-arrays
-        // tap(val => console.log('TAP8 (mergeMapped):', val)),
+        mergeMap((val: Observable<[Category, number]>) => val), // Unpack sub-arrays
         map(value => {
           return {category: value[0], amount: value[1], children: []};
         }),
-        // tap(val => console.log('TAP9 (final):', val.category.getQualifiedName(), val.amount)), // Never happens...
         toArray(),
-        // tap(val => console.log('TAP10 (unstructured)', val)),
         map((data: CategoryData[]) => {
-          const organized: CategoryData[] = [];
+          // Create initial CategoryData[]
+          const organized: CategoryData[] = data;
           for (const cat of categories) {
             var found = false;
             for (const d of data) {
               if (d.category === cat) {
-                organized.push(d);
                 found = true;
                 break;
               }
@@ -163,56 +142,43 @@ export class AccountsEffects {
               organized.push({category: cat, amount: 0, children: []});
             }
           }
-          for (const d of data) {
-            function addToParents(category: Category, amount: number) {
-              if (category.parent) {
-                for (const parent of organized) {
-                  if (parent.category === category.parent) {
-                    parent.amount += amount;
-                    addToParents(parent.category, amount)
-                  }
+
+          // Recursively add all amounts of children to amounts of their parents
+          function addToParents(category: Category, amount: number) {
+            if (category.parent) {
+              for (const parent of organized) {
+                if (parent.category === category.parent) {
+                  parent.amount += amount;
+                  addToParents(parent.category, amount)
                 }
               }
             }
-            addToParents(d.category, d.amount);
           }
+          const root = [];
+          for (const d of data) {
+            addToParents(d.category, d.amount);
+            if (d.category.parent != null && d.category.parent.parent === null) {
+              // Remember the root category
+              root.push(d);
+            }
+          }
+
+
           for (const child of organized) {
-            // console.log('Processing child', child.category);
-            
             for (const parent of organized) {
-              if (child.category.parent != null && parent.category != null && child.category.parent.id === parent.category.id) {
-                // console.log('Adding child', child, 'to parent', parent);
+              if (child.category.parent != null && child.category.parent === parent.category) {
                 parent.children.push(child);
               }
             }
           }
-          const sparse = [];
-          for (const d of organized) {
-            if (d.category.parent != null && d.category.parent.parent === null) {
-              sparse.push(d);
-            }
-          }
-          return sparse;
+          return root;
         }),
       );
     }),
-    // tap(val => console.log('TAP11 (structured)', val)),
     map((data: CategoryData[]) => {
-      function convertToDisplayElement(cd: CategoryData) {
-        const element: any = {name: cd.category.name, value: cd.amount};
-        if (cd.children.length > 0) {
-          element.children = [];
-          for (const child of cd.children) {
-            element.children.push(convertToDisplayElement(child));
-          }
-        }
-        return element;
-      }
       const pieChartData = [];
       for (const d of data) {
-        if (d.category.parent != null && d.category.parent.parent === null) {
-          pieChartData.push(convertToDisplayElement(d));
-        }
+        pieChartData.push(this.convertCategoryDataToDisplayElement(d));
       }
       return new accountsActions.SetCategoryData(pieChartData);
     }),

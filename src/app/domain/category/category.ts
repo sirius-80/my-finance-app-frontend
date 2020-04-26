@@ -2,7 +2,7 @@ import { Entity } from '../entity';
 import { v4 as uuid4 } from 'uuid';
 
 export class Category extends Entity {
-    private children: Category[] = [];
+    public children: Category[] = [];
 
     constructor(public id: string, public name: string, public parent: Category = null) {
         super(id);

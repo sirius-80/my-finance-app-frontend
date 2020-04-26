@@ -22,6 +22,7 @@ export function domainReducer(state = initialState, action: domainActions.domain
           for (const parent of categories) {
             if (cat.parent.toString() === parent.id) {
               category.parent = parent;
+              parent.children.push(category);
             }
           }
         } else {
