@@ -1,16 +1,17 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Effect, Actions, ofType } from '@ngrx/effects';
-import { switchMap, map, mergeMap, withLatestFrom, groupBy, toArray, reduce, mergeAll, filter, tap } from 'rxjs/operators';
+import { switchMap, map, mergeMap, withLatestFrom, groupBy, toArray, reduce, filter, combineLatest, last, tap, mergeAll, first, switchMapTo, defaultIfEmpty, mergeMapTo, concatMap } from 'rxjs/operators';
 
 import { AppState } from 'src/app/store/app.reducers';
 import * as accountsActions from './accounts.actions';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Combined, Balance } from '../accounts.model';
 import { Category } from 'src/app/domain/category/category';
-import { of, from, zip, Observable } from 'rxjs';
+import { of, from, zip, Observable, generate, merge } from 'rxjs';
 import { Account, Transaction } from 'src/app/domain/account/account';
 import { CategoryData } from './accounts.reducers';
+import { group } from '@angular/animations';
 
 
 @Injectable()
@@ -51,43 +52,44 @@ export class AccountsEffects {
   );
 
   @Effect()
-  monthlyCategoryDataFetch = this.actions$.pipe(
-    ofType(accountsActions.LOAD_MONTHLY_CATEGORY_DATA),
-    switchMap((action: accountsActions.LoadMonthlyCategoryData) => {
-      let url = 'http://' + this.HOST + ':5002/categories/';
-      if (action.payload) {
-        url += action.payload.id;
-      } else {
-        url += '0';
-      }
-      const params = new HttpParams().set('mode', 'monthly');
-      return this.httpClient.get<Balance[]>(url, {params} );
+  monthlyCategoryDataFetchDomain = this.actions$.pipe(
+    ofType(accountsActions.LOAD_MONTHLY_CATEGORY_DATA, accountsActions.LOAD_YEARLY_CATEGORY_DATA),
+    withLatestFrom(this.store.select(state => state.domain.accounts)),
+    switchMap(([action, accounts]: [accountsActions.LoadMonthlyCategoryData | accountsActions.LoadYearlyCategoryData, Account[]]) => {
+      return from(accounts).pipe(
+        mergeMap(account => account.transactions),
+        filter(transaction => transaction.category === action.payload || (transaction.category && transaction.category.inheritsFrom(action.payload))),
+        groupBy(transaction => {
+          let month = transaction.date.getMonth();
+          if (action instanceof accountsActions.LoadYearlyCategoryData) {
+            month = 1;
+          }
+          console.log('ACTION:', action);
+          return new Date(transaction.date.getFullYear(), month, 1).getTime();
+        }),
+        map(group => {
+          return zip(of(group.key), group.pipe(
+            reduce((acc: number, val: Transaction) => acc + val.amount, 0),
+          ))
+        }),
+        mergeMap(val => val),
+        map(val => {
+          return { date: new Date(val[0]), amount: val[1] };
+        }),
+        toArray(),
+        combineLatest(data => [action, data]),
+      );
     }),
-    map((data: Balance[]) => {
-      return new accountsActions.SetMonthlyCategoryData(data);
-    })
-  );
-
-  @Effect()
-  yearlyCategoryDataFetch = this.actions$.pipe(
-    ofType(accountsActions.LOAD_YEARLY_CATEGORY_DATA),
-    switchMap((action: accountsActions.LoadYearlyCategoryData) => {
-      let url = 'http://' + this.HOST + ':5002/categories/';
-      if (action.payload) {
-        url += action.payload.id;
+    map(([action, data]: [accountsActions.LoadMonthlyCategoryData | accountsActions.LoadYearlyCategoryData, { date: Date, amount: number }[]]) => {
+      if (action instanceof accountsActions.LoadMonthlyCategoryData) {
+        return new accountsActions.SetMonthlyCategoryData(data);
       } else {
-        url += '0';
+        return new accountsActions.SetYearlyCategoryData(data);
       }
-      const params = new HttpParams().set('mode', 'yearly');
-      return this.httpClient.get<Balance[]>(url, {params} );
-    }),
-    map((data: Balance[]) => {
-      return new accountsActions.SetYearlyCategoryData(data);
-    })
-  );
+    }));
 
   convertCategoryDataToDisplayElement(cd: CategoryData) {
-    const element: any = {name: cd.category.name, value: cd.amount};
+    const element: any = { name: cd.category.name, value: cd.amount };
     if (cd.children.length > 0) {
       element.children = [];
       for (const child of cd.children) {
@@ -97,11 +99,11 @@ export class AccountsEffects {
     return element;
   }
 
-  // TODO: Fix selection of None category (display root categories), and CLEAN-UP!
+  // TODO: Fix selection of None category (display root categories) and of level-3 categories, and CLEAN-UP!
   @Effect()
   categoryDataFetch = this.actions$.pipe(
     ofType(accountsActions.LOAD_CATEGORY_DATA),
-    
+
     // Get category hiearchy (selected category and all sub-categories)
     withLatestFrom(this.store.select(state => state.domain.categories)),
     switchMap(([action, categories]: [accountsActions.LoadCategoryData, Category[]]) => {
@@ -110,7 +112,7 @@ export class AccountsEffects {
         toArray(),
       )
     }),
-    
+
     withLatestFrom(this.store.select(state => state.domain.accounts)),
     switchMap(([categories, accounts]: [Category[], Account[]]) => {
       return from(accounts).pipe(
@@ -124,7 +126,7 @@ export class AccountsEffects {
         }),
         mergeMap((val: Observable<[Category, number]>) => val), // Unpack sub-arrays
         map(value => {
-          return {category: value[0], amount: value[1], children: []};
+          return { category: value[0], amount: value[1], children: [] };
         }),
         toArray(),
         map((data: CategoryData[]) => {
@@ -139,7 +141,7 @@ export class AccountsEffects {
               }
             }
             if (!found) {
-              organized.push({category: cat, amount: 0, children: []});
+              organized.push({ category: cat, amount: 0, children: [] });
             }
           }
 
@@ -184,68 +186,136 @@ export class AccountsEffects {
     }),
   );
 
+  /**
+   * Generate dates
+   */
+  dateGenerator(startDate: Date, endDate: Date) {
+    const temp = new Date(startDate.getTime());
+    const start = new Date(temp.setMonth(temp.getMonth() + 1, 1)); // Extend 1 month, set to the first of the month
+    const temp2 = new Date(endDate.getTime());
+    const limit = new Date(temp2.setMonth(temp2.getMonth() + 1, 1)); // Extend to next month
+    return generate(
+      start,
+      date => date <= limit,
+      date => {
+        const temp = new Date(date.getTime());
+        return new Date(temp.setMonth(temp.getMonth() + 1));
+      }
+    );
+  }
+
   // @Effect()
-  // loadCombinedData = this.actions$.pipe(
+  // monthlyCombinedDataFetch = this.actions$.pipe(
   //   ofType(accountsActions.LOAD_MONTHLY_COMBINED_DATA),
-  //   withLatestFrom(this.store.select(state => state.domain.accounts)),
-  //   map(([action, accounts]) => accounts),
-  //   concatMap(of),
-  //   mergeMap((account: Account) => account.transactions),
-  //   withLatestFrom(this.store.select(state => state.accounts.selectedCategory)),
-  //   map(([transaction, category]: [Transaction, Category]) => {
-  //     return {
-  //       date: transaction.date,
-  //       balance: transaction.balanceAfter,
-  //       income: transaction.amount > 0 && transaction.amount || 0,
-  //       expenses: transaction.amount < 0 && transaction.amount || 0,
-  //       profit: 0,
-  //       loss: 0,
-  //     };
+  //   switchMap((action: accountsActions.LoadMonthlyCombinedData) => {
+  //     const url = 'http://' + this.HOST + ':5002/combined';
+  //     const params = new HttpParams().set('mode', 'monthly');
+  //     return this.httpClient.get<Combined[]>(url, {params} );
+  //   }),
+  //   mergeMap((combined: Combined[]) => {
+  //     const actions = [];
+  //     actions.push(new accountsActions.SetMonthlyCombinedData(combined));
+  //     if (combined.length > 0) {
+  //       const start = new Date(combined[0].date);
+  //       const end = new Date(combined[combined.length - 1].date);
+  //       actions.push(new accountsActions.SetPeriod({start, end}));
+  //     }
+  //     return actions;
   //   })
-  //  TODO: combine into monhtly chunks!
-  // )
+  // );
 
+  // TODO: Merge balance-data into this one    
   @Effect()
-  monthlyCombinedDataFetch = this.actions$.pipe(
+  combinedDataFetchDomain2 = this.actions$.pipe(
     ofType(accountsActions.LOAD_MONTHLY_COMBINED_DATA),
-    switchMap((action: accountsActions.LoadMonthlyCombinedData) => {
-      const url = 'http://' + this.HOST + ':5002/combined';
-      const params = new HttpParams().set('mode', 'monthly');
-      return this.httpClient.get<Combined[]>(url, {params} );
-    }),
-    mergeMap((combined: Combined[]) => {
-      const actions = [];
-      actions.push(new accountsActions.SetMonthlyCombinedData(combined));
-      if (combined.length > 0) {
-        const start = new Date(combined[0].date);
-        const end = new Date(combined[combined.length - 1].date);
-        actions.push(new accountsActions.SetPeriod({start, end}));
-      }
-      return actions;
-    })
-  );
+    switchMapTo(this.store.select(state => state.domain.accounts)),
+    switchMap((accounts: Account[]) => from(accounts).pipe(
+      switchMap((account) => {
+        // console.log('Collecting data from account', account.name, account.bank);
 
-  @Effect()
-  yearlyCombinedDataFetch = this.actions$.pipe(
-    ofType(accountsActions.LOAD_YEARLY_COMBINED_DATA),
-    switchMap((action: accountsActions.LoadYearlyCombinedData) => {
-      const url = 'http://' + this.HOST + ':5002/combined';
-      const params = new HttpParams().set('mode', 'yearly');
-      return this.httpClient.get<Combined[]>(url, {params} );
-    }),
-    mergeMap((combined: Combined[]) => {
-      const actions = [];
-      actions.push(new accountsActions.SetYearlyCombinedData(combined));
-      if (combined.length > 0) {
-        const start = new Date(combined[0].date);
-        const end = new Date(combined[combined.length - 1].date);
-        actions.push(new accountsActions.SetPeriod({start, end}));
-      }
-      return actions;
-    })
+        return from(account.transactions).pipe( // determine date of first transaction of this account
+          first(),
+          tap(val => console.log('FIRST Transaction', val)),
+          map(transaction => transaction.date),
+          switchMap(startDate => this.dateGenerator(startDate, new Date())), // Generate list of monthly dates, starting at given startDate
+          switchMap(date => { // Determine balance of this account at given date
+            // console.log('GENERATED DATE', date);
+            const thisMonthTransactions = from(account.transactions).pipe(
+              filter(transaction => !transaction.internal),
+              filter(transaction => {
+                const tempDate = new Date(date.getTime());
+                return transaction.date < new Date(tempDate.setMonth(tempDate.getMonth() + 1)) && transaction.date > date;
+              })
+            );
+
+            return zip(
+              of(date),
+              from(account.transactions).pipe( // Find the last balance at given date 
+                filter(transaction => transaction.date < date),
+                defaultIfEmpty(new Transaction('', null, 0, date, 0, '', '', '', false, null, 0)), // If there are no transaction before given date, then the balance is 0 (account did not yet exist)
+                map(transaction => transaction.balanceAfter), // Map the transaction to something simpeler
+                last(), // We're only interested in the last
+              ),
+              from(account.transactions).pipe(
+                filter(transaction => !transaction.internal),
+                filter(transaction => {
+                  const tempDate = new Date(date.getTime());
+                  return transaction.date < new Date(tempDate.setMonth(tempDate.getMonth() + 1)) && transaction.date > date;
+                }),
+                filter(transaction => transaction.amount > 0),
+                map(t => t.amount),
+                reduce((acc: number, amount: number) => acc + amount, 0),
+              ),
+              from(account.transactions).pipe(
+                filter(transaction => !transaction.internal),
+                filter(transaction => {
+                  const tempDate = new Date(date.getTime());
+                  return transaction.date < new Date(tempDate.setMonth(tempDate.getMonth() + 1)) && transaction.date > date;
+                }),
+                filter(transaction => transaction.amount < 0),
+                map(t => t.amount),
+                reduce((acc: number, amount: number) => acc + amount, 0),
+              ),
+              from(account.transactions).pipe(
+                filter(transaction => !transaction.internal),
+                filter(transaction => {
+                  const tempDate = new Date(date.getTime());
+                  return transaction.date < new Date(tempDate.setMonth(tempDate.getMonth() + 1)) && transaction.date > date;
+                }),
+                map(t => t.amount),
+                reduce((acc: number, amount: number) => acc + amount, 0),
+                map(profit => profit > 0 && profit || 0)
+              ),
+              from(account.transactions).pipe(
+                filter(transaction => !transaction.internal),
+                filter(transaction => {
+                  const tempDate = new Date(date.getTime());
+                  return transaction.date < new Date(tempDate.setMonth(tempDate.getMonth() + 1)) && transaction.date > date;
+                }),
+                map(t => t.amount),
+                reduce((acc: number, amount: number) => acc + amount, 0),
+                map(loss => loss > 0 && loss || 0)
+              ),
+            );
+          }),
+          map(data => new Combined(data[0], data[1], data[2], data[3], data[4], data[5])),
+        );
+      }),
+
+      groupBy(combined => combined.date.getTime()),
+      tap(val => console.log('GROUPS', val)),
+      map((group) => group.pipe(
+        reduce((acc, val) => acc.add(val), new Combined(new Date(group.key), 0, 0, 0, 0, 0)),
+      )),
+      mergeAll(),
+      toArray(),
+    ),
+    ),
+    tap(val => console.log('COMBINED: ', val)),
+    map((data) => new accountsActions.SetMonthlyCombinedData(data))
   );
 
   constructor(private actions$: Actions,
-              private httpClient: HttpClient,
-              private store: Store<AppState>) {}
+    private httpClient: HttpClient,
+    private store: Store<AppState>) { }
 }

@@ -35,7 +35,7 @@ const initialState: State = {
   selectedCategory: null,
   granularity: 'monthly',
   period: {
-    start: new Date('1970-01-01'),
+    start: new Date(0),
     end: new Date()
   },
   categoryData: null,
