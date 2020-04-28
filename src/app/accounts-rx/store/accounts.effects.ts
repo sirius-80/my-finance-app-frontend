@@ -204,27 +204,6 @@ export class AccountsEffects {
     );
   }
 
-  // @Effect()
-  // monthlyCombinedDataFetch = this.actions$.pipe(
-  //   ofType(accountsActions.LOAD_MONTHLY_COMBINED_DATA),
-  //   switchMap((action: accountsActions.LoadMonthlyCombinedData) => {
-  //     const url = 'http://' + this.HOST + ':5002/combined';
-  //     const params = new HttpParams().set('mode', 'monthly');
-  //     return this.httpClient.get<Combined[]>(url, {params} );
-  //   }),
-  //   mergeMap((combined: Combined[]) => {
-  //     const actions = [];
-  //     actions.push(new accountsActions.SetMonthlyCombinedData(combined));
-  //     if (combined.length > 0) {
-  //       const start = new Date(combined[0].date);
-  //       const end = new Date(combined[combined.length - 1].date);
-  //       actions.push(new accountsActions.SetPeriod({start, end}));
-  //     }
-  //     return actions;
-  //   })
-  // );
-
-  // TODO: Merge balance-data into this one    
   @Effect()
   combinedDataFetchDomain2 = this.actions$.pipe(
     ofType(accountsActions.LOAD_MONTHLY_COMBINED_DATA),
@@ -238,17 +217,7 @@ export class AccountsEffects {
           tap(val => console.log('FIRST Transaction', val)),
           map(transaction => transaction.date),
           switchMap(startDate => this.dateGenerator(startDate, new Date())), // Generate list of monthly dates, starting at given startDate
-          switchMap(date => { // Determine balance of this account at given date
-            // console.log('GENERATED DATE', date);
-            const thisMonthTransactions = from(account.transactions).pipe(
-              filter(transaction => !transaction.internal),
-              filter(transaction => {
-                const tempDate = new Date(date.getTime());
-                return transaction.date < new Date(tempDate.setMonth(tempDate.getMonth() + 1)) && transaction.date > date;
-              })
-            );
-
-            return zip(
+          switchMap(date => zip(
               of(date),
               from(account.transactions).pipe( // Find the last balance at given date 
                 filter(transaction => transaction.date < date),
@@ -258,52 +227,40 @@ export class AccountsEffects {
               ),
               from(account.transactions).pipe(
                 filter(transaction => !transaction.internal),
-                filter(transaction => {
-                  const tempDate = new Date(date.getTime());
-                  return transaction.date < new Date(tempDate.setMonth(tempDate.getMonth() + 1)) && transaction.date > date;
-                }),
+                filter(transaction => transaction.date >= date && transaction.date < new Date(new Date(date.getTime()).setMonth(date.getMonth() + 1))),
                 filter(transaction => transaction.amount > 0),
                 map(t => t.amount),
                 reduce((acc: number, amount: number) => acc + amount, 0),
               ),
               from(account.transactions).pipe(
                 filter(transaction => !transaction.internal),
-                filter(transaction => {
-                  const tempDate = new Date(date.getTime());
-                  return transaction.date < new Date(tempDate.setMonth(tempDate.getMonth() + 1)) && transaction.date > date;
-                }),
+                filter(transaction => transaction.date >= date && transaction.date < new Date(new Date(date.getTime()).setMonth(date.getMonth() + 1))),
                 filter(transaction => transaction.amount < 0),
                 map(t => t.amount),
                 reduce((acc: number, amount: number) => acc + amount, 0),
               ),
               from(account.transactions).pipe(
                 filter(transaction => !transaction.internal),
-                filter(transaction => {
-                  const tempDate = new Date(date.getTime());
-                  return transaction.date < new Date(tempDate.setMonth(tempDate.getMonth() + 1)) && transaction.date > date;
-                }),
+                filter(transaction => transaction.date >= date && transaction.date < new Date(new Date(date.getTime()).setMonth(date.getMonth() + 1))),
                 map(t => t.amount),
                 reduce((acc: number, amount: number) => acc + amount, 0),
                 map(profit => profit > 0 && profit || 0)
               ),
               from(account.transactions).pipe(
                 filter(transaction => !transaction.internal),
-                filter(transaction => {
-                  const tempDate = new Date(date.getTime());
-                  return transaction.date < new Date(tempDate.setMonth(tempDate.getMonth() + 1)) && transaction.date > date;
-                }),
+                filter(transaction => transaction.date >= date && transaction.date < new Date(new Date(date.getTime()).setMonth(date.getMonth() + 1))),
                 map(t => t.amount),
                 reduce((acc: number, amount: number) => acc + amount, 0),
-                map(loss => loss > 0 && loss || 0)
+                map(loss => loss < 0 && loss || 0)
               ),
-            );
-          }),
+            )
+          ),
           map(data => new Combined(data[0], data[1], data[2], data[3], data[4], data[5])),
         );
       }),
 
       groupBy(combined => combined.date.getTime()),
-      tap(val => console.log('GROUPS', val)),
+      // tap(val => console.log('GROUPS', val)),
       map((group) => group.pipe(
         reduce((acc, val) => acc.add(val), new Combined(new Date(group.key), 0, 0, 0, 0, 0)),
       )),
