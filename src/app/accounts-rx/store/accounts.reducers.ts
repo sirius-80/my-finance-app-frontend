@@ -27,6 +27,8 @@ export interface State  {
   monthlyData: Combined[];
   yearlyData: Combined[];
   currentData: Combined[];
+  monthlyBalances: Balance[];
+  yearlyBalances: Balance[];
   selectedPeriod: {start: Date, end: Date};
 }
 
@@ -45,12 +47,24 @@ const initialState: State = {
   monthlyData: [],
   yearlyData: [],
   currentData: [],
+  monthlyBalances: [],
+  yearlyBalances: [],
   selectedPeriod: null,
 };
 
 export function accountsReducer(state = initialState, action: accountsActions.accountsActions) {
   console.log('accountsReducer: reducing action', action);
   switch (action.type) {
+    case accountsActions.SET_MONTHLY_BALANCES:
+      return {
+        ...state,
+        monthlyBalances: action.payload,
+      };
+    case accountsActions.SET_YEARLY_BALANCES:
+      return {
+        ...state,
+        yearlyBalances: action.payload,
+      }
     case accountsActions.SELECT_CATEGORY:
       return {
         ...state,

@@ -205,6 +205,52 @@ export class AccountsEffects {
   }
 
   @Effect()
+  balanceFetchDomain = this.actions$.pipe(
+    ofType(accountsActions.LOAD_MONTHLY_BALANCES),
+    switchMapTo(this.store.select(state => state.domain.accounts)),
+    switchMap((accounts: Account[]) => from(accounts).pipe(
+      switchMap(account => from(account.transactions).pipe(
+        first(),
+        map(t => t.date),
+        switchMap(startDate => this.dateGenerator(startDate, new Date())),
+        switchMap(date => from(account.transactions).pipe(
+            filter(t => t.date < date),
+            defaultIfEmpty(new Transaction('', null, 0, date, 0, '', '', '', false, null, 0)), // If there are no transaction before given date, then the balance is 0 (account did not yet exist)
+            last(),
+            map(t => new Balance(date, t.balanceAfter))
+          )
+        ),
+      )),
+      groupBy(balance => balance.date.getTime()),
+      map(group => group.pipe(
+        reduce((acc, val) => new Balance(val.date, acc.amount + val.amount), new Balance(new Date(group.key), 0))
+      )),
+      mergeAll(),
+      toArray(),
+    )),
+    switchMap(data => [
+      new accountsActions.SetMonthlyBalances(data),
+      new accountsActions.ConvertMonthlyBalancesToYearly(),
+    ]),
+  );
+
+  @Effect()
+  convertToYearlyBalances = this.actions$.pipe(
+    ofType(accountsActions.CONVERT_MONTHLY_BALANCES_TO_YEARLY),
+    switchMapTo(this.store.select(state => state.accounts.monthlyBalances)),
+    mergeAll(),
+    groupBy(balance => balance.date.getFullYear()),
+    tap(val => console.log('GROUP:', val)),
+    map(group => group.pipe(
+      last(),
+      tap(val => console.log('TAP:', val)),
+    )),
+    mergeAll(),
+    toArray(),
+    map(data => new accountsActions.SetYearlyBalances(data)),
+  )
+
+  @Effect()
   combinedDataFetchDomain2 = this.actions$.pipe(
     ofType(accountsActions.LOAD_MONTHLY_COMBINED_DATA),
     switchMapTo(this.store.select(state => state.domain.accounts)),
